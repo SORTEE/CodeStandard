@@ -8,11 +8,11 @@ Clone the repository to your computer by creating an R project or buy using the 
 
 `git clone https://github.com/SORTEE/CodeStandard.git` 
 
-> ## Important! 
->
-> After clone the repository, switch to the `hackathon` branch. You will not be allowed to push changes to the `main` branch. 
-> Commmand: `git switch hackathon` or `git checkout hackathon`
-> Make sure you are in the right place: `git branch`
+### Important! 
+
+After clone the repository, switch to the `hackathon` branch. You will not be allowed to push changes to the `main` branch.   
+Commmand: `git switch hackathon` or `git checkout hackathon`  
+Make sure you are in the right place: `git branch`  
 
 # Repository structure
 
@@ -20,12 +20,12 @@ The repository has six folders with the same internal structure. Each folders is
 
 Folders: 
 
-|_ ADD NAMES
-|_ 
-|_ 
-|_ 
-|_ 
-|_ 
+|_ ADD NAMES  
+|_   
+|_   
+|_   
+|_   
+|_   
 
 In each folder we provide the code (the same code) to be reviewed and modified in the Hackathon. The idea is that from the same innitial code we will have different outputs of code. So after the hackathon we can go trough the modification and unify it in a single code/folder. 
 
