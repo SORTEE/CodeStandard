@@ -14,7 +14,7 @@ Clone the repository to your computer by creating an R project or buy using the 
 
 `git clone https://github.com/SORTEE/CodeStandard.git` 
 
-### Important:exclamation::exclamation::exclamation: 
+### Important :exclamation: :exclamation: :exclamation: 
 
 After clone the repository, switch to the `hackathon` branch. You will not be allowed to push changes to the `main` branch.   
 
@@ -25,15 +25,14 @@ Then, make sure you are in the right place: `git branch`
 
 The repository has six folders with the same internal structure. Each folders is to be used by one of the working groups during the Hackathon. 
 
-.
-├── :open_file_folder:01_Reported
-├── :open_file_folder:02_Run
-├── :open_file_folder:03_Reliable
-├── :open_file_folder:04_Reproducible
-├── :open_file_folder:05_Organization_Structure
-├── :open_file_folder:06_Other_considerations
-├── :page_facing_up:LICENSE
-└── :page_facing_up:README.md
+├── :open_file_folder:01_Reported  
+├── :open_file_folder:02_Run  
+├── :open_file_folder:03_Reliable  
+├── :open_file_folder:04_Reproducible  
+├── :open_file_folder:05_Organization_Structure  
+├── :open_file_folder:06_Other_considerations   
+├── :page_facing_up:LICENSE  
+└── :page_facing_up:README.md  
 
 
 In each folder we provide the same innitial code to be reviewed and modified in the Hackathon. The idea is that from the same innitial code we will have different outputs of code. So after the hackathon we can go trough the modifications and unify it in a single code/folder. 
