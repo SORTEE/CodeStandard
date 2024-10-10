@@ -14,11 +14,11 @@ Clone the repository to your computer by creating an R project or buy using the 
 
 `git clone https://github.com/SORTEE/CodeStandard.git` 
 
-### Important :exclamation: :exclamation: :exclamation: 
+### Important :exclamation::exclamation::exclamation: 
 
-After clone the repository, switch to the `hackathon` branch. You will not be allowed to push changes to the `main` branch.   
+After clone the repository, switch to the `hackathon` branch. You will not be allowed to push changes to the `main` branch.     
 
-Commmand: `git switch hackathon` or `git checkout hackathon` 
+Command: `git switch hackathon` or `git checkout hackathon`.   
 Then, make sure you are in the right place: `git branch`  
 
 ## Repository structure
