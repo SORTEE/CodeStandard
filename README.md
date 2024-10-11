@@ -9,6 +9,8 @@ Before the hackathon, make sure you have a github account.
 1. [HackMD](https://hackmd.io/kxNotAiRQdaIq62pkQ2K_A) - Here we have a markdown editor designed for real-time writing and collaboration that will be used as a notebook during the Hackathon. There you can find more detailed information about the Hackathon, especlially in the [Hackathon Outline](https://hackmd.io/kxNotAiRQdaIq62pkQ2K_A#Hackathon-outline) section. 
 2. [Slides](https://docs.google.com/presentation/d/1fSY_UCjT8Wz---Ultba62r_sItDC2qKkmnwcY78LEuY/edit?usp=sharing). The slides used in the Hackathon are already available. 
 3. [List of Participants](https://docs.google.com/spreadsheets/d/1U3LnAbkklFMbEmkUIWbzjq7RAtb_xPedyc2VvixNRDE/edit?usp=sharing). We will ask participants to fill their informantion during the Hackathon. 
+4. [Data repository](https://datadryad.org/stash/dataset/doi:10.5061/dryad.m905qfv5p) - You'll only need to download the files 'CatFood2021_deposit.csv' and 'README.md' from the data repository.
+5. [Paper](https://royalsocietypublishing.org/doi/10.1098/rspb.2023.0414) van Dis et al 2023. Phenological mismatch affects individual fitness and population growth in the winter moth. https://royalsocietypublishing.org/doi/10.1098/rspb.2023.0414
 
 ## How to work in the repository
 
@@ -50,5 +52,5 @@ We suggest that:
 - Commmit and push often. Always pull before push your commits. 
 - You can come across to merging messages (especially if you are using command line to pull/push). If so, accept the merging. It depends, on the editor configured on your git, but helpful commands can be `:wq` (write and quite) or `ctrl/cmd + x`.
 - If you need to solve a conflict, make sure you can resolve it before commit. If you are unsure, discuss with your group or call the hosts before change and commit the file. 
-- If you get stucked using git locally in your machine. You can edit files directly on github and add the changes you made as a commit. If choose to do like that, make sure you are in the `hackathon` branch.
+- If you get stucked using git locally in your machine, you can edit files directly on github and add the changes you made as a commit. If you choose to do like that, make sure you are in the `hackathon` branch.
 
