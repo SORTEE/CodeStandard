@@ -4,7 +4,7 @@ This is the collaborative repository for the **SORTEE Code Club Hackathon: Creat
 
 The Hackathon takes place online on _Wed Oct 16 2024, 06:00-07:55 UTC +00:00_ for the Society for Open, Reliable, and Transparent Ecology & Evolution (SORTEE). In this repo you can find all the relevant instructions, files and links to other resources used during the hackathon. 
 
-❗ This repository is your landing page for the Hackathon. Please bookmark this repo for easy access to all resources.
+❗ **This repository is your landing page for the Hackathon. Please bookmark this repo for easy access to all resources.**
 
 Before the Hackathon, make sure you have a Github account. 
 
@@ -25,7 +25,7 @@ Clone the repository to your computer by creating an R project or by using the g
 
 `git clone https://github.com/SORTEE/CodeStandard.git` 
 
-### :exclamation: Important
+### ❗ Important
 
 After cloning the repository, switch to the `hackathon` branch. You will not be allowed to push changes to the `main` branch.     
 
