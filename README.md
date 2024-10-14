@@ -2,7 +2,7 @@
 
 This is the collaborative repository for the **SORTEE Code Club Hackathon: Creating a Code Standard**, writing the "perfect" Open, Reliable, and Transparent (ORT) code for Ecology & Evolution.
 
-The Hackathon takes place online on _Wed Oct 16 2024, 06:00-07:55 UTC +00:00_ as part of [the 2024 Conference](https://www.sortee.org/upcoming/) of the Society for Open, Reliable, and Transparent Ecology & Evolution (SORTEE). In this repo you can find all the relevant instructions, files and links to other resources used during the hackathon. 
+The Hackathon takes place online on _Wed Oct 16 2024, 06:00-07:55 UTC +00:00_ as part of [the 2024 SORTEE Conference](https://www.sortee.org/upcoming/): the Society for Open, Reliable, and Transparent Ecology & Evolution. In this repo you can find all the relevant instructions, files and links to other resources used during the hackathon. 
 
 ❗ **This repository is your landing page for the Hackathon. Please bookmark this repo for easy access to all resources.**
 
