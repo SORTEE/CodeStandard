@@ -12,7 +12,7 @@ Before the Hackathon, make sure you have a Github account.
 
 1. [HackMD](https://hackmd.io/kxNotAiRQdaIq62pkQ2K_A) -- Collaborative Markdown file for real-time writing that we will use as a notebook during the Hackathon. Here you can find more detailed information about the Hackathon.
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:page_facing_up: Please carefully read section [Hackathon Outline](https://hackmd.io/kxNotAiRQdaIq62pkQ2K_A#Hackathon-outline) describing how we will work. 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :page_facing_up: Please carefully read section [Hackathon Outline](https://hackmd.io/kxNotAiRQdaIq62pkQ2K_A#Hackathon-outline) describing how we will work. 
 
 2. [Slides](https://docs.google.com/presentation/d/1fSY_UCjT8Wz---Ultba62r_sItDC2qKkmnwcY78LEuY/edit?usp=sharing) -- The slides with the introduction, instructions, and schedule for the Hackathon are available here. 
 3. [Participant sign-up sheet](https://docs.google.com/spreadsheets/d/1U3LnAbkklFMbEmkUIWbzjq7RAtb_xPedyc2VvixNRDE/edit?usp=sharing) -- We will ask participants to sign-up during the Hackathon and fill in their information to be added to the team of this repo and be listed as contributor to the Code Standard. 
