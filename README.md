@@ -11,7 +11,9 @@ Before the Hackathon, make sure you have a Github account.
 ## Useful links
 
 1. [HackMD](https://hackmd.io/kxNotAiRQdaIq62pkQ2K_A) - Collaborative Markdown file for real-time writing that we will use as a notebook during the Hackathon. There you can find more detailed information about the Hackathon.
-:page_facing_up:Please carefully read section [Hackathon Outline](https://hackmd.io/kxNotAiRQdaIq62pkQ2K_A#Hackathon-outline) describing how we will work. 
+
+:page_facing_up: Please carefully read section [Hackathon Outline](https://hackmd.io/kxNotAiRQdaIq62pkQ2K_A#Hackathon-outline) describing how we will work. 
+
 2. [Slides](https://docs.google.com/presentation/d/1fSY_UCjT8Wz---Ultba62r_sItDC2qKkmnwcY78LEuY/edit?usp=sharing) - The slides with the introduction, instructions, and schedule for the Hackathon are available here. 
 3. [Participant sign-up sheet](https://docs.google.com/spreadsheets/d/1U3LnAbkklFMbEmkUIWbzjq7RAtb_xPedyc2VvixNRDE/edit?usp=sharing) - We will ask participants to sign-up during the Hackathon and fill in their information to be added to the team of this repo and be listed as contributor to the Code Standard. 
 4. [Paper](https://royalsocietypublishing.org/doi/10.1098/rspb.2023.0414) - To create the code standard, we will work on the code from this paper: van Dis et al 2023. Phenological mismatch affects individual fitness and population growth in the winter moth. Proc R Soc B 290: 20230414. https://doi.org/10.5061/dryad.m905qfv5p
