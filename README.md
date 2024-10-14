@@ -1,9 +1,12 @@
 # CodeStandard
 
-This is a collaborative repository for the **SORTEE Code Club Hackathon: Creating a Code Standard**. The hackathon takes place online on Wed Oct 16 2024, 06:00-07:55 UTC +00:00 for the Society for Open, Reliable, and Transparent Ecology & Evolution (SORTEE). In this repo you can find all the relevant instructions, files and links to other resources used during the hackathon. 
+This is the collaborative repository for the **SORTEE Code Club Hackathon: Creating a Code Standard**.
+
+The Hackathon takes place online on _Wed Oct 16 2024, 06:00-07:55 UTC +00:00_ for the Society for Open, Reliable, and Transparent Ecology & Evolution (SORTEE). In this repo you can find all the relevant instructions, files and links to other resources used during the hackathon. 
+
 ❗ This repository is your landing page for the Hackathon. Please bookmark this repo for easy access to all resources.
 
-Before the hackathon, make sure you have a Github account. 
+Before the Hackathon, make sure you have a Github account. 
 
 ## Useful links
 
