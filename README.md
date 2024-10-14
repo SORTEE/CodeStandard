@@ -16,7 +16,7 @@ Before the Hackathon, make sure you have a Github account.
 
 2. [Slides](https://docs.google.com/presentation/d/1fSY_UCjT8Wz---Ultba62r_sItDC2qKkmnwcY78LEuY/edit?usp=sharing) -- The slides with the introduction, instructions, and schedule for the Hackathon are available here. 
 3. [Participant sign-up sheet](https://docs.google.com/spreadsheets/d/1U3LnAbkklFMbEmkUIWbzjq7RAtb_xPedyc2VvixNRDE/edit?usp=sharing) -- We will ask participants to sign-up during the Hackathon and fill in their information to be added to the team of this repo and be listed as contributor to the Code Standard. 
-4. [Paper](https://royalsocietypublishing.org/doi/10.1098/rspb.2023.0414) -- To create the code standard, we will work on the code from this paper: _van Dis et al 2023. Phenological mismatch affects individual fitness and population growth in the winter moth. Proc R Soc B 290: 20230414._
+4. [Paper](https://royalsocietypublishing.org/doi/10.1098/rspb.2023.0414) -- To create the Code Standard, we will work on the code from this paper: _van Dis et al 2023. Phenological mismatch affects individual fitness and population growth in the winter moth. Proc R Soc B 290: 20230414._
 5. [Data repository](https://datadryad.org/stash/dataset/doi:10.5061/dryad.m905qfv5p) -- For the Hackathon, you will only need to download the files ```CatFood2021_deposit.csv``` and ```README.md``` from the data repository.
 
 ## How to work in the repository
@@ -60,6 +60,6 @@ We suggest to:
 - Avoid working in the same file at the same time. Communicate! Discuss within your group the task division before starting to work in a particular file. Let people know that you are working there. 
 - `commmit` and `push` often (i.e. for every task/major change). Always `pull` before pushing your commits. 
 - You can come across merging messages (especially if you are using the command line to ```pull/push```). If so, accept the merging. It depends on the editor configured on your `git`, but helpful commands can be `:wq` (write and quite) or `ctrl/cmd + x`.
-- If you need to solve a conflict, make sure you resolve it before committing. If you are unsure, discuss with your group or ask the Hackathon hosts for help before changing and committing the file. 
+- If you have a `git` conflict, you need to resolve it before committing. If you are unsure how to, discuss with your group or ask the Hackathon hosts for help before changing and committing the file. 
 - If you get stuck using `git` locally in your machine, you can edit files directly on Github and add the changes you made as a commit. Also here: make sure you are working in the `hackathon` branch.
 
