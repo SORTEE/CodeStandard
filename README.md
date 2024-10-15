@@ -62,4 +62,5 @@ We suggest to:
 - You can come across merging messages (especially if you are using the command line to ```pull/push```). If so, accept the merging. It depends on the editor configured on your `git`, but helpful commands can be `:wq` (write and quite) or `ctrl/cmd + x`.
 - If you have a `git` conflict, you need to resolve it before committing. If you are unsure how to, discuss with your group or ask the Hackathon hosts for help before changing and committing the file. 
 - If you get stuck using `git` locally in your machine, you can edit files directly on Github and add the changes you made as a commit. Also here: make sure you are working in the `hackathon` branch.
+- We have a `git` help section at the end on the slides. Check there: [Hackathon Slides](https://docs.google.com/presentation/d/1fSY_UCjT8Wz---Ultba62r_sItDC2qKkmnwcY78LEuY/edit?usp=sharing).
 
