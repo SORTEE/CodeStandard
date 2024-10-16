@@ -6,9 +6,8 @@
 
 # Open R project in main folder
 
-# Install packages
-# The session info with all the packages and their versions used in this analysis can
-# be found in in the "_src" folder file "env_CatFoodExp2021_analysis.txt"
+# Restore library
+renv::restore()
 
 # Load packages
 #-----------------------------------
