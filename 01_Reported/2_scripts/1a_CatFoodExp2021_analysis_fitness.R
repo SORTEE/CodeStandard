@@ -20,7 +20,10 @@ library(lmerTest)
 d <- read.csv("1_data/CatFood2021_deposit.csv")
 head(d)
 
-length(unique(d$TubeID)) # should be 22 mothers
+# renaming TubeID as MotherID to match the terminology used in the Statistical section of the paper
+d <- rename(d, MotherID = TubeID)
+
+length(unique(d$MotherID)) # should be 22 mothers
 table(d$Treatment) # photoperiod and mismatch treatment coded in one variable
 
 
@@ -28,7 +31,7 @@ table(d$Treatment) # photoperiod and mismatch treatment coded in one variable
 #-----------------------------------
 
 # N per Area
-table(d[!duplicated(d$TubeID), "AreaShortName"])
+table(d[!duplicated(d$MotherID), "AreaShortName"])
 
 
 #---------------------------------------------------------------------------------------------------------------------------
@@ -38,10 +41,10 @@ table(d[!duplicated(d$TubeID), "AreaShortName"])
 
 # Survival data ####
 d_surv <- d %>% mutate(PhotoTreat=gsub("(\\w+)Day.+","\\1",Treatment), MismTreat=gsub("\\w+(Day.+)","\\1",Treatment)) %>% 
-  select(TubeID, Treatment, PhotoTreat, MismTreat, CaterpillarID, DeadAprilDay, PupationAprilDay) %>%
+  select(MotherID, Treatment, PhotoTreat, MismTreat, CaterpillarID, DeadAprilDay, PupationAprilDay) %>%
   pivot_longer(cols=c(DeadAprilDay, PupationAprilDay), names_to="Info", values_to="TimeOfEvent") %>%
   filter(!is.na(TimeOfEvent)) %>%
-  mutate(Event=ifelse(Info=="DeadAprilDay", 1, 0), Treatment=as.factor(Treatment), PhotoTreat=as.factor(ifelse(PhotoTreat=="Chang", "Changing", "Constant")), MismTreatf=as.factor(MismTreat), TubeID=as.factor(TubeID)) %>%
+  mutate(Event=ifelse(Info=="DeadAprilDay", 1, 0), Treatment=as.factor(Treatment), PhotoTreat=as.factor(ifelse(PhotoTreat=="Chang", "Changing", "Constant")), MismTreatf=as.factor(MismTreat), MotherID=as.factor(MotherID)) %>%
   mutate(Treatment=factor(Treatment, levels=c("ChangDay-4", "ChangDay-3", "ChangDay-2", "ChangDay-1", "ChangDay0", "ChangDay+1", "ChangDay+2", "ChangDay+3", "ChangDay+4",
                                               "ChangDay+5",  "ConstDay-4", "ConstDay-2", "ConstDay0", "ConstDay+2", "ConstDay+4")), 
     MismTreatf=factor(MismTreat, levels=c("Day-4", "Day-3", "Day-2", "Day-1", "Day0", "Day+1", "Day+2", "Day+3", "Day+4", "Day+5")),
@@ -62,15 +65,15 @@ length(unique(d_surv$CaterpillarID)) # should be 976
 levels(d_surv$Treatment)
 levels(d_surv$PhotoTreat)
 levels(d_surv$MismTreatf) # as factor or not? Marcel thinks not ####
-levels(d_surv$TubeID)
+levels(d_surv$MotherID)
 table(d_surv$TimeOfEvent)
-table(d_surv$Event)
+table(d_surv$Event) # this variable corresponds to "survival" as defined in the paper (e.g., the response variable in the first binomial mixed-effect model)
 
 # Visualize survival probabilities ####
 head(d_surv)
 
-surv_probs <- aggregate(Event~MismTreat + PhotoTreat + TubeID, d_surv, sum) # per mother
-surv_probs$samplesize <- aggregate(Info~MismTreat + PhotoTreat + TubeID, d_surv, length)$Info
+surv_probs <- aggregate(Event~MismTreat + PhotoTreat + MotherID, d_surv, sum) # per mother
+surv_probs$samplesize <- aggregate(Info~MismTreat + PhotoTreat + MotherID, d_surv, length)$Info
 surv_probs$probs <- 100 - (surv_probs$Event/surv_probs$samplesize*100) # event = death
 head(surv_probs)
 
@@ -96,9 +99,9 @@ raw_surv
 #-----------------------------------
 head(d_surv) # test if probability of survival differs between treatments
 
-glm1 <- glmer(Event ~ (MismTreat1 + MismTreat2)*PhotoTreat + (1|TubeID), family=binomial, data=d_surv,
+glm1 <- glmer(Event ~ (MismTreat1 + MismTreat2)*PhotoTreat + (1|MotherID), family=binomial, data=d_surv,
               na.action="na.fail", control=glmerControl(calc.derivs=F)) # helps convergence
-anova1 <- drop1(glm1,test="Chi") %>% as.data.frame # interaction not significant
+anova1 <- drop1(glm1,test="Chi") %>% as.data.frame # interaction not significant; the use of Chi-square test to determine statistical significance should be 
 anova1$mod <- "glm1"
 
 glm2 <- update(glm1, ~ . -MismTreat1:PhotoTreat - MismTreat2:PhotoTreat) # simplify model
@@ -114,7 +117,7 @@ glm_res <- summary(glm_final)$coefficients %>% as.data.frame
 # write.csv(rbind(anova1, anova2), file="_results/anova_Surv_glmer.csv", row.names=T)
 
 # Get predictions ####
-glm.pred <- d_surv[!duplicated(d_surv[,c("TubeID", "Treatment")]),] # each replicate assigned same prediction, so remove duplicates
+glm.pred <- d_surv[!duplicated(d_surv[,c("MotherID", "Treatment")]),] # each replicate assigned same prediction, so remove duplicates
 glm.pred$pred <- predict(glm_final, newdata=glm.pred, type="response") # predictions are probability of dying now
 glm.pred$survprob <- (1-glm.pred$pred)
 aggregate(survprob~MismTreat, data=glm.pred, mean) # peak at Day2
@@ -140,9 +143,9 @@ rm(anova1, anova2, glm_res, glm1, glm2, pred, surv_probs, surv_avg, raw_surv) #c
 head(d)
 
 d_pupa <- d %>% mutate(PhotoTreat=gsub("(\\w+)Day.+","\\1",Treatment), MismTreat=gsub("\\w+(Day.+)","\\1",Treatment), PupaWeight=PupaWeight_ingrams*1000) %>%
-  select(ExperimentName, TubeID, Treatment, PhotoTreat, MismTreat, CaterpillarID, PupationAprilDay, PupaWeight) %>%
+  select(ExperimentName, MotherID, Treatment, PhotoTreat, MismTreat, CaterpillarID, PupationAprilDay, PupaWeight) %>%
   filter(!is.na(PupationAprilDay)) %>%
-  mutate(Treatment=as.factor(Treatment), PhotoTreat=as.factor(ifelse(PhotoTreat=="Chang", "Changing", "Constant")), MismTreatf=as.factor(MismTreat), TubeID=as.factor(TubeID)) %>%
+  mutate(Treatment=as.factor(Treatment), PhotoTreat=as.factor(ifelse(PhotoTreat=="Chang", "Changing", "Constant")), MismTreatf=as.factor(MismTreat), MotherID=as.factor(MotherID)) %>%
   mutate(Treatment=factor(Treatment, levels=c("ChangDay-4", "ChangDay-3", "ChangDay-2", "ChangDay-1", "ChangDay0", "ChangDay+1", "ChangDay+2", "ChangDay+3", "ChangDay+4",
                                               "ChangDay+5",  "ConstDay-4", "ConstDay-2", "ConstDay0", "ConstDay+2", "ConstDay+4")), 
          MismTreatf=factor(MismTreat, levels=c("Day-4", "Day-3", "Day-2", "Day-1", "Day0", "Day+1", "Day+2", "Day+3", "Day+4", "Day+5")),
@@ -177,7 +180,7 @@ raw_weight
 
 # Fit linear mixed model ####
 #-----------------------------------
-lm1 <- lmer(PupaWeight ~ (MismTreat1 + MismTreat2)*PhotoTreat + (1|TubeID), data=d_pupa)
+lm1 <- lmer(PupaWeight ~ (MismTreat1 + MismTreat2)*PhotoTreat + (1|MotherID), data=d_pupa)
 anova1 <- anova(lm1) %>% as.data.frame() # interaction not significant
 anova1$mod <- "lm1"
 
@@ -190,7 +193,7 @@ anova3 <- anova(lm3) %>% as.data.frame() # PhotoTreat and MismTreat significant
 anova3$mod <- "lm3"
 
 # Still there if exclude first time point with low sample size?
-lm4 <- lmer(PupaWeight ~ -1 + MismTreat1 + PhotoTreat + (1|TubeID), data=filter(d_pupa, MismTreat!=-4))
+lm4 <- lmer(PupaWeight ~ -1 + MismTreat1 + PhotoTreat + (1|MotherID), data=filter(d_pupa, MismTreat!=-4))
 anova(lm4) # yes
 
 
@@ -207,7 +210,7 @@ qqline(resid(lm_final))
 # write.csv(rbind(anova1, anova2, anova3), file="_results/anova_PupaWeight_lmer.csv", row.names=T)
 
 # Get predictions ####
-lm.pred <- d_pupa[!duplicated(d_pupa[,c("TubeID", "Treatment")]),] # each replicate assigned same prediction, so remove duplicates
+lm.pred <- d_pupa[!duplicated(d_pupa[,c("MotherID", "Treatment")]),] # each replicate assigned same prediction, so remove duplicates
 lm.pred$pred <- predict(lm_final, newdata=lm.pred, type="response")
 head(lm.pred)
 
@@ -232,15 +235,15 @@ rm(anova1, anova2, anova3, lm1, lm2, lm3, lm4, lm_res, raw_weight, weight, pred1
 #--------------------------------------------
 
 # Don't care about PhotoTreat effect, drop from models ####
-glm_fit <- glmer(Event ~ MismTreat1 + MismTreat2 + (1 | TubeID), family="binomial", data=d_surv)
-lm_fit <- lmer(PupaWeight ~ MismTreat1 + (1 | TubeID), data=d_pupa)
+glm_fit <- glmer(Event ~ MismTreat1 + MismTreat2 + (1 | MotherID), family="binomial", data=d_surv)
+lm_fit <- lmer(PupaWeight ~ MismTreat1 + (1 | MotherID), data=d_pupa)
 
 # Get predictions to use for curve ####
-glm.fit <- d_surv[!duplicated(d_surv[,c("TubeID", "MismTreatf")]),] # each replicate assigned same prediction, so remove duplicates
+glm.fit <- d_surv[!duplicated(d_surv[,c("MotherID", "MismTreatf")]),] # each replicate assigned same prediction, so remove duplicates
 glm.fit$pred <- predict(glm_fit, newdata=glm.fit, type="response") # predictions are probability of dying now
 glm.fit$survpred <- (1-glm.fit$pred)
 
-lm.fit <- d_pupa[!duplicated(d_pupa[,c("TubeID", "MismTreatf")]),] # each replicate assigned same prediction, so remove duplicates
+lm.fit <- d_pupa[!duplicated(d_pupa[,c("MotherID", "MismTreatf")]),] # each replicate assigned same prediction, so remove duplicates
 lm.fit$pred <- predict(lm_fit, newdata=lm.fit, type="response")
 
 head(glm.fit) # pred = probability of dying, survpred=1-pred, 220 observations = 22 mothers * 10 MismTreat groups
@@ -249,7 +252,7 @@ head(lm.fit) # pred=predicted weight from lmer, only 154 observations
 
 # Fit curve to absolute fitness ####
 #-----------------------------------
-RelFit <- merge(glm.fit[,c("TubeID", "MismTreat", "survpred")], lm.fit[,c("TubeID", "MismTreat", "pred")], by=c("TubeID", "MismTreat"), all=T)
+RelFit <- merge(glm.fit[,c("MotherID", "MismTreat", "survpred")], lm.fit[,c("MotherID", "MismTreat", "pred")], by=c("MotherID", "MismTreat"), all=T)
 colnames(RelFit)[c(3,4)] <- c("survpred", "pupwpred")
 RelFit$Fit <- RelFit$survpred*RelFit$pupwpred # multiply absolute values
 head(RelFit) # can only do for 154 observations, clutches with >=1 caterpillar surviving until pupation
@@ -269,8 +272,8 @@ curve$rel <- curve$pred/filter(curve, MismTreat==2)$pred # expressive relative t
 RelFit$rel <- RelFit$Fit2/mean(filter(RelFit, MismTreat==2)$Fit2)
 
 RelFit_means <- Rmisc::summarySE(RelFit, measurevar="rel", groupvars=c("MismTreat"))
-#RelFit_means$samplesize <- aggregate(TubeID~MismTreat, data=d_pupa, length)$TubeID # number of caterpillars curve is based on
-RelFit_means$samplesize <- aggregate(TubeID~MismTreat, data=d_surv, length)$TubeID # number of caterpillars curve is based on = all
+#RelFit_means$samplesize <- aggregate(MotherID~MismTreat, data=d_pupa, length)$MotherID # number of caterpillars curve is based on
+RelFit_means$samplesize <- aggregate(MotherID~MismTreat, data=d_surv, length)$MotherID # number of caterpillars curve is based on = all
 RelFit_means$curve <- curve$rel
 head(RelFit_means)
 # write.csv(RelFit_means, file="_results/RelFitness_rev.csv", row.names=F)
