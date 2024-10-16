@@ -101,7 +101,7 @@ head(d_surv) # test if probability of survival differs between treatments
 
 glm1 <- glmer(Event ~ (MismTreat1 + MismTreat2)*PhotoTreat + (1|MotherID), family=binomial, data=d_surv,
               na.action="na.fail", control=glmerControl(calc.derivs=F)) # helps convergence
-anova1 <- drop1(glm1,test="Chi") %>% as.data.frame # interaction not significant; the use of Chi-square test to determine statistical significance should be 
+anova1 <- drop1(glm1,test="Chi") %>% as.data.frame # interaction not significant; the use of Chi-square test to determine statistical significance should be explicitly mention in the paper
 anova1$mod <- "glm1"
 
 glm2 <- update(glm1, ~ . -MismTreat1:PhotoTreat - MismTreat2:PhotoTreat) # simplify model
