@@ -228,7 +228,6 @@ p_weight <- raw_weight + #geom_line(data=pred1, aes(y=pred)) +
 p_weight
 # ggsave(filename="_results/PupWeight_wpred_rev.png", plot=p_weight, device="png", width=200, height=150, units="mm", dpi="print")
 
-rm(anova1, anova2, anova3, lm1, lm2, lm3, lm4, lm_res, raw_weight, weight, pred1) # clean up
 
 
 #--------------------------------------------
@@ -295,7 +294,6 @@ p_relfit <- ggplot(data=RelFit, aes(x=MismTreat, y=rel)) +
 p_relfit
 # ggsave(filename="_results/FitnessCurve_rev.png", plot=p_relfit, device="png", width=200, height=150, units="mm", dpi="print")
 
-rm(curve, RelFit_means) # clean up
 
 
 
