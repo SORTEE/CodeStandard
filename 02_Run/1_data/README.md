@@ -1,5 +1,9 @@
 # Raw data belonging to the manuscript "Phenological mismatch affects individual fitness and population growth in the winter moth"
 
+## Download
+You can download the data from Dryad repository: https://doi.org/10.5061/dryad.m905qfv5p
+
+
 ## Study
 We know little about the fine-scale fitness consequences of phenological mismatch at the individual level and how this mismatch affects population dynamics in the winter moth. 
 To determine the fitness consequences of mistimed egg hatching relative to timing of oak budburst, we quantified survival and pupation weight in a feeding experiment. 
