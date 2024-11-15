@@ -1,34 +1,32 @@
-R version 4.4.0 (2024-04-24)
-Platform: x86_64-pc-linux-gnu
-Running under: Ubuntu 22.04.4 LTS
+R version 4.1.2 (2021-11-01)
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+Running under: Windows 10 x64 (build 19044)
 
 Matrix products: default
-BLAS:   /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0 
-LAPACK: /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0
 
 locale:
- [1] LC_CTYPE=en_GB.UTF-8       LC_NUMERIC=C               LC_TIME=en_GB.UTF-8       
- [4] LC_COLLATE=en_GB.UTF-8     LC_MONETARY=en_GB.UTF-8    LC_MESSAGES=en_GB.UTF-8   
- [7] LC_PAPER=en_GB.UTF-8       LC_NAME=C                  LC_ADDRESS=C              
-[10] LC_TELEPHONE=C             LC_MEASUREMENT=en_GB.UTF-8 LC_IDENTIFICATION=C       
-
-time zone: Europe/Paris
-tzcode source: system (glibc)
+[1] LC_COLLATE=Dutch_Netherlands.1252  LC_CTYPE=Dutch_Netherlands.1252    LC_MONETARY=Dutch_Netherlands.1252
+[4] LC_NUMERIC=C                       LC_TIME=Dutch_Netherlands.1252    
 
 attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
- [1] lme4_1.1-35.5   Matrix_1.6-5    cowplot_1.1.3   lubridate_1.9.3 forcats_1.0.0   stringr_1.5.1  
- [7] dplyr_1.1.4     purrr_1.0.2     readr_2.1.5     tidyr_1.3.1     tibble_3.2.1    ggplot2_3.5.1  
-[13] tidyverse_2.0.0
+ [1] lmerTest_3.1-3  lme4_1.1-28     Matrix_1.3-4    coxme_2.2-17    bdsmatrix_1.3-6 survival_3.2-13 cowplot_1.1.1   readxl_1.3.1   
+ [9] forcats_0.5.1   stringr_1.4.0   dplyr_1.0.8     purrr_0.3.4     readr_2.1.2     tidyr_1.2.0     tibble_3.1.6    ggplot2_3.3.5  
+[17] tidyverse_1.3.1
 
 loaded via a namespace (and not attached):
- [1] gtable_0.3.5      compiler_4.4.0    Rcpp_1.0.12       tidyselect_1.2.1  splines_4.4.0    
- [6] scales_1.3.0      boot_1.3-30       lattice_0.22-5    plyr_1.8.9        R6_2.5.1         
-[11] Rmisc_1.5.1       pak_0.7.2         generics_0.1.3    MASS_7.3-60       nloptr_2.1.1     
-[16] munsell_0.5.1     minqa_1.2.7       pillar_1.9.0      tzdb_0.4.0        rlang_1.1.3      
-[21] utf8_1.2.4        stringi_1.8.4     timechange_0.3.0  cli_3.6.2         mgcv_1.9-1       
-[26] withr_3.0.0       magrittr_2.0.3    grid_4.4.0        rstudioapi_0.16.0 hms_1.1.3        
-[31] nlme_3.1-163      lifecycle_1.0.4   vctrs_0.6.5       glue_1.7.0        farver_2.1.2     
-[36] fansi_1.0.6       colorspace_2.1-0  tools_4.4.0       pkgconfig_2.0.3  
+ [1] httr_1.4.2          jsonlite_1.8.0      splines_4.1.2       carData_3.0-5       modelr_0.1.8        assertthat_0.2.1   
+ [7] cellranger_1.1.0    numDeriv_2016.8-1.1 pillar_1.7.0        backports_1.4.1     lattice_0.20-45     glue_1.6.2         
+[13] digest_0.6.29       ggsignif_0.6.3      rvest_1.0.2         minqa_1.2.4         colorspace_2.0-3    plyr_1.8.7         
+[19] pkgconfig_2.0.3     broom_0.7.12        haven_2.4.3         mvtnorm_1.1-3       xtable_1.8-4        scales_1.1.1       
+[25] km.ci_0.5-6         KMsurv_0.1-5        tzdb_0.2.0          emmeans_1.7.5       mgcv_1.8-38         farver_2.1.0       
+[31] generics_0.1.2      car_3.0-12          ellipsis_0.3.2      ggpubr_0.4.0        withr_2.5.0         cli_3.2.0          
+[37] magrittr_2.0.2      crayon_1.5.1        estimability_1.4    fs_1.5.2            fansi_1.0.3         nlme_3.1-153       
+[43] MASS_7.3-54         rstatix_0.7.0       xml2_1.3.3          tools_4.1.2         data.table_1.14.2   hms_1.1.1          
+[49] lifecycle_1.0.1     munsell_0.5.0       reprex_2.0.1        compiler_4.1.2      survminer_0.4.9     rlang_1.0.2        
+[55] grid_4.1.2          nloptr_2.0.0        rstudioapi_0.13     Rmisc_1.5.1         labeling_0.4.2      boot_1.3-28        
+[61] gtable_0.3.0        abind_1.4-5         DBI_1.1.2           R6_2.5.1            gridExtra_2.3       zoo_1.8-10         
+[67] lubridate_1.8.0     knitr_1.38          survMisc_0.5.6      utf8_1.2.2          stringi_1.7.6       Rcpp_1.0.8.3       
+[73] vctrs_0.3.8         dbplyr_2.1.1        tidyselect_1.1.2    xfun_0.30          
