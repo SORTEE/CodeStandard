@@ -3,6 +3,11 @@
 # Either hatching on day of budburst (Day0), before (Day-4 to -1), or after (Day+1 to +5)
 # Disentangle effects of photoperiod and food quality: photoperiod treatment (changing or constant)
 
+# before start download the dataset 'CatFood2021_deposit.csv'
+# from Dryad repository: https://doi.org/10.5061/dryad.m905qfv5p
+
+# the dataset should be saved in the folder 1_data
+
 
 # Open R project in main folder
 
