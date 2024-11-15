@@ -3,8 +3,16 @@
 # Either hatching on day of budburst (Day0), before (Day-4 to -1), or after (Day+1 to +5)
 # Disentangle effects of photoperiod and food quality: photoperiod treatment (changing or constant)
 
+# before start download the dataset 'CatFood2021_deposit.csv'
+# from Dryad repository: https://doi.org/10.5061/dryad.m905qfv5p
+
+# the dataset should be saved in the folder 1_data
+
 
 # Open R project in main folder
+
+# Restore library
+renv::restore()
 
 # Load packages
 #-----------------------------------
@@ -13,6 +21,7 @@ library(cowplot)
 theme_set(theme_cowplot()) #white background instead of grey -> don't load if want grey grid
 library(lme4)
 library(lmerTest)
+library(Rmisc)
 
 
 # Load data ####
@@ -227,7 +236,6 @@ p_weight <- raw_weight + #geom_line(data=pred1, aes(y=pred)) +
 p_weight
 # ggsave(filename="_results/PupWeight_wpred_rev.png", plot=p_weight, device="png", width=200, height=150, units="mm", dpi="print")
 
-rm(anova1, anova2, anova3, lm1, lm2, lm3, lm4, lm_res, raw_weight, weight, pred1) # clean up
 
 
 #--------------------------------------------
@@ -294,7 +302,6 @@ p_relfit <- ggplot(data=RelFit, aes(x=MismTreat, y=rel)) +
 p_relfit
 # ggsave(filename="_results/FitnessCurve_rev.png", plot=p_relfit, device="png", width=200, height=150, units="mm", dpi="print")
 
-rm(curve, RelFit_means) # clean up
 
 
 
