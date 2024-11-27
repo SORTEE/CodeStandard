@@ -8,6 +8,9 @@ The Hackathon takes place online on _Wed Oct 16 2024, 06:00-07:55 UTC +00:00_ as
 
 Before the Hackathon, make sure you have a Github account. 
 
+🙋 **Hackathon hosts:** Natalie E. van Dis & Arthur V. Rodrigues
+🧑‍🤝‍🧑 **Hackathon participants:** Kevin R. Bairos-Novak, Mattia Ghilardi, Alfredo Sánchez-Tójar, Kelleher Saoirse
+
 ## Hackathon links
 
 1. [HackMD](https://hackmd.io/kxNotAiRQdaIq62pkQ2K_A) -- Collaborative Markdown file for real-time writing that we will use as a notebook during the Hackathon. Here you can find more detailed information about the Hackathon.
