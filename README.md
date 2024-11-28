@@ -9,7 +9,7 @@ The Hackathon takes place online on _Wed Oct 16 2024, 06:00-07:55 UTC +00:00_ as
 Before the Hackathon, make sure you have a Github account. 
 
 🙋 **Hackathon hosts:** Natalie E. van Dis & Arthur V. Rodrigues  
-🧑‍🤝‍🧑 **Hackathon participants:** Kevin R. Bairos-Novak, Mattia Ghilardi, Alfredo Sánchez-Tójar, Kelleher Saoirse
+🧑‍🤝‍🧑 **Hackathon participants:** Kevin R. Bairos-Novak, Mattia Ghilardi, Alfredo Sánchez-Tójar, Kelleher Saoirse, Matthieu Paquet
 
 ## Hackathon links
 
