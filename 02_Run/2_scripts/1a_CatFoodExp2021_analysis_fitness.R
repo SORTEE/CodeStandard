@@ -30,7 +30,7 @@ d <- read.csv("1_data/CatFood2021_deposit.csv")
 head(d)
 
 # renaming TubeID as MotherID to match the terminology used in the Statistical section of the paper
-d <- rename(d, MotherID = TubeID)
+d <- dplyr::rename(d, MotherID = TubeID) ## call via namespace to correctly load `rename()` function from `dplyr` package
 
 length(unique(d$MotherID)) # should be 22 mothers
 table(d$Treatment) # photoperiod and mismatch treatment coded in one variable
