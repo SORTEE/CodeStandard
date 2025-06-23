@@ -22,11 +22,35 @@ theme_set(theme_cowplot()) #white background instead of grey -> don't load if wa
 library(lme4)
 library(lmerTest)
 library(Rmisc)
+library(rdryad)
 
 
 # Load data ####
 #-----------------------------------
-d <- read.csv("1_data/CatFood2021_deposit.csv")
+
+# Check if data is present in folder
+file_name <- "CatFood2021_deposit.csv"
+file_path <- file.path("1_data", file_name)
+file_exists <- file.exists(file_path)
+
+# If not, automatically download it from Dryad
+if(file_exists == F) {
+  
+  # DOI to get data online:
+  doi <- "10.5061/dryad.m905qfv5p"
+  
+  # Download data
+  files <- dryad_download(doi)
+  
+  # Read dataset
+  fileTemp <- files[[doi]][grepl(file_name, files[[doi]])]
+  d <- read_csv(fileTemp)
+  write_csv(d, file_path)
+  
+}
+
+# Read data
+d <- read_csv(file_path)
 head(d)
 
 # renaming TubeID as MotherID to match the terminology used in the Statistical section of the paper
