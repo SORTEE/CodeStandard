@@ -49,7 +49,7 @@ d <- read.csv(file.path("1_data", file_name))
 head(d)
 
 # renaming TubeID as MotherID to match the terminology used in the Statistical section of the paper
-d <- rename(d, MotherID = TubeID)
+d <- dplyr::rename(d, MotherID = TubeID)
 
 length(unique(d$MotherID)) # should be 22 mothers
 table(d$Treatment) # photoperiod and mismatch treatment coded in one variable
@@ -127,8 +127,8 @@ raw_surv
 #-----------------------------------
 head(d_surv) # test if probability of survival differs between treatments
 
-glm1 <- glmer(Event ~ (MismTreat1 + MismTreat2)*PhotoTreat + (1|MotherID), family=binomial, data=d_surv,
-              na.action="na.fail", control=glmerControl(calc.derivs=F)) # helps convergence
+glm1 <- lme4::glmer(Event ~ (MismTreat1 + MismTreat2)*PhotoTreat + (1|MotherID), family=binomial, data=d_surv,
+                    na.action="na.fail", control=glmerControl(calc.derivs=F)) # helps convergence
 anova1 <- drop1(glm1,test="Chi") %>% as.data.frame # interaction not significant; the use of Chi-square test to determine statistical significance should be explicitly mention in the paper
 anova1$mod <- "glm1"
 
@@ -208,7 +208,7 @@ raw_weight
 
 # Fit linear mixed model ####
 #-----------------------------------
-lm1 <- lmer(PupaWeight ~ (MismTreat1 + MismTreat2)*PhotoTreat + (1|MotherID), data=d_pupa)
+lm1 <- lme4::lmer(PupaWeight ~ (MismTreat1 + MismTreat2)*PhotoTreat + (1|MotherID), data=d_pupa)
 anova1 <- anova(lm1) %>% as.data.frame() # interaction not significant
 anova1$mod <- "lm1"
 
@@ -221,7 +221,7 @@ anova3 <- anova(lm3) %>% as.data.frame() # PhotoTreat and MismTreat significant
 anova3$mod <- "lm3"
 
 # Still there if exclude first time point with low sample size?
-lm4 <- lmer(PupaWeight ~ -1 + MismTreat1 + PhotoTreat + (1|MotherID), data=filter(d_pupa, MismTreat!=-4))
+lm4 <- lme4::lmer(PupaWeight ~ -1 + MismTreat1 + PhotoTreat + (1|MotherID), data=filter(d_pupa, MismTreat!=-4))
 anova(lm4) # yes
 
 
@@ -262,8 +262,8 @@ p_weight
 #--------------------------------------------
 
 # Don't care about PhotoTreat effect, drop from models ####
-glm_fit <- glmer(Event ~ MismTreat1 + MismTreat2 + (1 | MotherID), family="binomial", data=d_surv)
-lm_fit <- lmer(PupaWeight ~ MismTreat1 + (1 | MotherID), data=d_pupa)
+glm_fit <- lme4::glmer(Event ~ MismTreat1 + MismTreat2 + (1 | MotherID), family="binomial", data=d_surv)
+lm_fit <- lme4::lmer(PupaWeight ~ MismTreat1 + (1 | MotherID), data=d_pupa)
 
 # Get predictions to use for curve ####
 glm.fit <- d_surv[!duplicated(d_surv[,c("MotherID", "MismTreatf")]),] # each replicate assigned same prediction, so remove duplicates
