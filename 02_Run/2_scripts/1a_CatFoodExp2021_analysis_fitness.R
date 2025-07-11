@@ -16,6 +16,7 @@ renv::restore()
 
 # Load packages
 #-----------------------------------
+library(rdryad)
 library(tidyverse)
 library(cowplot)
 theme_set(theme_cowplot()) #white background instead of grey -> don't load if want grey grid
@@ -24,9 +25,22 @@ library(lmerTest)
 library(Rmisc)
 
 
+# Download data from dryad repository ####
+#-----------------------------------
+
+# Download dryad repo in rdryad cache
+doi <- "10.5061/dryad.m905qfv5p"
+tmp_files <- rdryad::dryad_download(doi)[[doi]]
+
+# Copy desired file to data folder
+file_name <- "CatFood2021_deposit.csv"
+file.copy(tmp_files[grepl(file_name, tmp_files)], 
+          "1_data", 
+          overwrite = TRUE)
+
 # Load data ####
 #-----------------------------------
-d <- read.csv("1_data/CatFood2021_deposit.csv")
+d <- read.csv(file.path("1_data", file_name))
 head(d)
 
 # renaming TubeID as MotherID to match the terminology used in the Statistical section of the paper
