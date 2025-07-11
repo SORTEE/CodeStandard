@@ -186,6 +186,8 @@ nrow(d_pupa)/nrow(d)*100 # ~35%
 
 # Visualize ####
 weight <- Rmisc::summarySE(d_pupa, measurevar="PupaWeight", groupvars=c("MismTreat", "PhotoTreat"))
+# The warning message occurs because at Mismatch = -4 sample size is N = 1 for both treatments
+# and standard deviations cannot be computed
 weight$pos <- ifelse(is.na(weight$se)==T, 0, weight$se) # position of sample size labels
 weight
 
@@ -244,6 +246,8 @@ head(lm.pred)
 
 # Visualize predictions ####
 pred1 <- Rmisc::summarySE(lm.pred, measurevar="pred", groupvars=c("MismTreat", "PhotoTreat")) # significant effect of photoperiod, so show separate means
+# The warning message occurs because at Mismatch = -4 sample size is N = 1 for both treatments
+# and standard deviations cannot be computed
 pred1$samplesize <- weight$N
 pred1$pos <- ifelse(is.na(pred1$se)==T, 0, pred1$se) # position of sample size labels
 
@@ -314,7 +318,7 @@ p_relfit <- ggplot(data=RelFit, aes(x=MismTreat, y=rel)) +
   geom_text(data=RelFit_means,aes(label=samplesize, y=rel+0.12), col="black", size=5, fontface="bold")+ # number of caterpillars
   geom_hline(yintercept=1, linetype="dashed")+
   labs(y="Relative fitness", x="Mismatch with oak budburst date (days)")+
-  scale_y_continuous(lim=c(0,1.21), breaks=seq(0,1.6, by=0.2))+ scale_x_continuous(breaks=seq(-4,5, by=1))+ #lim=c(-0.1,1.3)
+  scale_y_continuous(breaks=seq(0,1.2, by=0.2))+ scale_x_continuous(breaks=seq(-4,5, by=1))+ #lim=c(-0.1,1.3)
   theme(legend.position="none")+
   theme(axis.title.y=element_text(size=18, vjust=2), axis.title.x=element_text(size=18, vjust=-0.5),
         axis.text=element_text(size=16), legend.text = element_text(size=16), legend.title=element_text(size=17))
