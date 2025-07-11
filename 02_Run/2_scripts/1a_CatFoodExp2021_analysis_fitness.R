@@ -24,6 +24,11 @@ library(lme4)
 library(lmerTest)
 library(Rmisc)
 
+# Create folders to store data and results ####
+#-----------------------------------
+sapply(c("1_data", "_results"),
+       function(i) 
+         if (! dir.exists(i)) dir.create(i))
 
 # Download data from dryad repository ####
 #-----------------------------------
