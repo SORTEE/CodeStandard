@@ -210,7 +210,7 @@ raw_weight
 
 # Fit linear mixed model ####
 #-----------------------------------
-lm1 <- lme4::lmer(PupaWeight ~ (MismTreat1 + MismTreat2)*PhotoTreat + (1|MotherID), data=d_pupa)
+lm1 <- lmerTest::lmer(PupaWeight ~ (MismTreat1 + MismTreat2)*PhotoTreat + (1|MotherID), data=d_pupa)
 anova1 <- anova(lm1) %>% as.data.frame() # interaction not significant
 anova1$mod <- "lm1"
 
@@ -223,7 +223,7 @@ anova3 <- anova(lm3) %>% as.data.frame() # PhotoTreat and MismTreat significant
 anova3$mod <- "lm3"
 
 # Still there if exclude first time point with low sample size?
-lm4 <- lme4::lmer(PupaWeight ~ -1 + MismTreat1 + PhotoTreat + (1|MotherID), data=filter(d_pupa, MismTreat!=-4))
+lm4 <- lmerTest::lmer(PupaWeight ~ -1 + MismTreat1 + PhotoTreat + (1|MotherID), data=filter(d_pupa, MismTreat!=-4))
 anova(lm4) # yes
 
 
@@ -267,7 +267,7 @@ p_weight
 
 # Don't care about PhotoTreat effect, drop from models ####
 glm_fit <- lme4::glmer(Event ~ MismTreat1 + MismTreat2 + (1 | MotherID), family="binomial", data=d_surv)
-lm_fit <- lme4::lmer(PupaWeight ~ MismTreat1 + (1 | MotherID), data=d_pupa)
+lm_fit <- lmerTest::lmer(PupaWeight ~ MismTreat1 + (1 | MotherID), data=d_pupa)
 
 # Get predictions to use for curve ####
 glm.fit <- d_surv[!duplicated(d_surv[,c("MotherID", "MismTreatf")]),] # each replicate assigned same prediction, so remove duplicates
