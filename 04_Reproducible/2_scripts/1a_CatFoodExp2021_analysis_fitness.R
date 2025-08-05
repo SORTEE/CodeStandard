@@ -23,7 +23,19 @@ library(lme4)
 library(lmerTest)
 library(Rmisc)
 library(rdryad)
+if(!require(ggpubr)) install.packages('ggpubr') # if not installed
+library(ggpubr) # To arrange multiple figures
 
+# User configuration ####
+#-----------------------------------
+
+  # set to TRUE to save figures
+save_figures <- FALSE
+
+  # this creates output directory if saving is enabled
+if (save_figures && !dir.exists("_results")) {
+  dir.create("_results")
+}
 
 # Load data ####
 #-----------------------------------
@@ -58,7 +70,6 @@ d <- dplyr::rename(d, MotherID = TubeID)
 
 length(unique(d$MotherID)) # should be 22 mothers
 table(d$Treatment) # photoperiod and mismatch treatment coded in one variable
-
 
 # Descriptives
 #-----------------------------------
@@ -260,6 +271,41 @@ p_weight <- raw_weight + #geom_line(data=pred1, aes(y=pred)) +
 p_weight
 # ggsave(filename="_results/PupWeight_wpred_rev.png", plot=p_weight, device="png", width=200, height=150, units="mm", dpi="print")
 
+#--------------------------------------------
+# Making figure 2 ####
+#--------------------------------------------
+
+# common_legend in ggarrange() does not work properly here
+  # (to get legend on the right)
+# so we use a trick by combining ggpubr and cowplot
+# we extract the legend, which is considered as a different figure
+# then we arrange figure position with cowplot::plot_grid()
+fig2_layout <- 
+  ggpubr::ggarrange(p_surv + theme(legend.position = "none"),
+                    p_weight + theme(legend.position = "none"), 
+                    nrow = 1,
+                    labels = c("(a)", "(b)"),
+                    font.label = list(face = "italic")) 
+
+fig2 <- 
+  cowplot::plot_grid(fig2_layout, 
+                     # extracting legend here
+                     ggpubr::get_legend(p_weight), 
+                     # to arrange positions
+                     rel_widths = c(0.6, 0.1)) +
+  bgcolor('white')
+
+  # sate save_figures to TRUE to save the figure
+if(save_figures == T) {
+  
+  ggplot2::ggsave(filename = "_results/figure_2.png",
+                  fig2, 
+                  device = "png", 
+                  width = 400, 
+                  height = 150, 
+                  units = "mm", 
+                  dpi = "print")
+}
 
 
 #--------------------------------------------
