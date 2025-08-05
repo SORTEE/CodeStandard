@@ -54,7 +54,7 @@ d <- read_csv(file_path)
 head(d)
 
 # renaming TubeID as MotherID to match the terminology used in the Statistical section of the paper
-d <- rename(d, MotherID = TubeID)
+d <- dplyr::rename(d, MotherID = TubeID)
 
 length(unique(d$MotherID)) # should be 22 mothers
 table(d$Treatment) # photoperiod and mismatch treatment coded in one variable
@@ -326,7 +326,40 @@ p_relfit <- ggplot(data=RelFit, aes(x=MismTreat, y=rel)) +
 p_relfit
 # ggsave(filename="_results/FitnessCurve_rev.png", plot=p_relfit, device="png", width=200, height=150, units="mm", dpi="print")
 
+# Average fitness loss per day ####
+#----------------------------------
 
+  # 1. Hatching earlier than budburst date
+fitness_loss_hatchedEarlier <- 
+RelFit_means %>%
+  dplyr::select(MismTreat, rel) %>%
+  dplyr::filter(MismTreat <= 2) %>%
+  dplyr::rename("rel_fitness" = "rel") %>%
+  # What would have been the mean fitness if hatched one day later?
+  mutate(lagged_fitness = lead(rel_fitness)) %>%
+  mutate(fitness_loss = (lagged_fitness - rel_fitness) / lagged_fitness)
+
+fitness_loss_hatchedEarlier %>% print
+mean(fitness_loss_hatchedEarlier$fitness_loss, na.rm = T) 
+  # Average value -> reported as 14% in paper, but 53% here? Did I misunderstood?
+fitness_loss_hatchedEarlier %>% dplyr::slice(which.max(fitness_loss))
+  # Max value -> reported as 32% in paper, but 89% here? Did I misunderstood?
+
+  # 2. Hatching later than budburst date
+fitness_loss_hatchedLater <- 
+RelFit_means %>%
+  dplyr::select(MismTreat, rel) %>%
+  dplyr::filter(MismTreat >= 2) %>%
+  dplyr::rename("rel_fitness" = "rel") %>%
+  # What would have been the mean fitness if hatched one day later?
+  mutate(lagged_fitness = lag(rel_fitness)) %>%
+  mutate(fitness_loss = (lagged_fitness - rel_fitness) / lagged_fitness)
+
+fitness_loss_hatchedLater %>% print
+mean(fitness_loss_hatchedLater$fitness_loss, na.rm = T) 
+# Average value -> reported as 6% in paper, but 18% here? Did I misunderstood?
+fitness_loss_hatchedLater %>% dplyr::slice(which.max(fitness_loss))
+# Max value -> reported as 24% in paper, but 29% here? Did I misunderstood?
 
 
 sessionInfo() %>% capture.output(file="_src/env_CatFoodExp2021_analysis.txt")
