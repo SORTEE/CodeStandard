@@ -11,6 +11,8 @@
 
 # Open R project in main folder
 
+rm(list=ls())
+
 # Restore library
 renv::restore()
 
