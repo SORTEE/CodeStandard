@@ -42,15 +42,30 @@ library(Rmisc)
 library(rdryad)
 library(ggpubr) # To arrange multiple figures
 
+# Load functions ####
+#----------------------------------- #
+
+pathF <- c("2_scripts/Functions/") # They are stored here
+functions <- list.files(pathF)
+sapply(functions, function(file) source(paste0(pathF, file))) %>% invisible
+
 # User configuration ####
 #----------------------------------- #
 
-  # set to TRUE to save figures
+  # set to TRUE to save figures (as .png files)
 save_figures <- FALSE
+  # set to TRUE to save tables (as .csv files)
+save_tables <- FALSE
+  # set to TRUE to save reference outputs (as .rds files)
+save_ref_outputs <- FALSE
 
   # this creates output directory if saving is enabled
-if (save_figures && !dir.exists("_results")) {
+if (save_figures | save_tables && !dir.exists("_results")) {
   dir.create("_results")
+}
+
+if (save_ref_outputs && !dir.exists("_results/ref")) {
+  dir.create("_results/ref")
 }
 
 # Load data ####
@@ -85,15 +100,21 @@ head(d)
 # renaming TubeID as MotherID to match the terminology used in the Statistical section of the paper
 d <- dplyr::rename(d, MotherID = TubeID)
 
-length(unique(d$MotherID)) # should be 22 mothers
-table(d$Treatment) # photoperiod and mismatch treatment coded in one variable
+# Number of mothers: should be 22
+nb_mothers <- length(unique(d$MotherID))
+print(nb_mothers)
+checkReproducibilityValues(nb_mothers, 22) # checking reproducibility
+
+# Photoperiod and mismatch treatment coded in one variable
+table(d$Treatment) 
 
 # Descriptives ####
 #----------------------------------- #
 
-# N per Area
-table(d[!duplicated(d$MotherID), "AreaShortName"])
-
+# N females per Area
+fem_per_area <- table(d[!duplicated(d$MotherID), "AreaShortName"])
+print(fem_per_area)
+checkReproducibilityValues(fem_per_area, c(3, 6, 6, 7)) # checking reproducibility
 
 #---------------------------------------------------------------------------------------------------------------------------  #
 # Fitness curve ####
@@ -117,12 +138,21 @@ d_surv <- d %>% mutate(PhotoTreat=gsub("(\\w+)Day.+","\\1",Treatment), MismTreat
     MismTreat=as.numeric(gsub("Day(.+)","\\1",MismTreat))) %>%
   mutate(MismTreat1=MismTreat+5, # no negatives to be able to fit squared term
          MismTreat2=(MismTreat+5)^2) # squared term to add in model
+
+  # To save d_surv after checking that it is OK (save_tables should be set to TRUE)
+if(save_ref_outputs) write_rds(d_surv, "_results/ref/d_surv_expected.rds")
+  # To check reproducibility with checked file
+checkReproducibilityOutput(d_surv, "_results/ref/d_surv_expected.rds")
+
 # Vidisha coded it as TimeOfEvent=DeadAprilDay or PupationAprilDay, with event=Died or Survived
 head(d_surv)
 str(d_surv)
 table(d_surv$MismTreat2)
 
-length(unique(d_surv$CaterpillarID)) # should be 976
+  # Automatic reproducibility check
+nb_caterpillars <- length(unique(d_surv$CaterpillarID)) # should be 976
+print(nb_caterpillars)
+checkReproducibilityValues(nb_caterpillars, 976) 
 
 levels(d_surv$Treatment)
 levels(d_surv$PhotoTreat)
@@ -143,6 +173,11 @@ surv_avg <- Rmisc::summarySE(surv_probs, measurevar="probs", groupvars=c("MismTr
 surv_avg$samplesize <- aggregate(Info~MismTreat, d_surv, length)$Info
 surv_avg
 
+  # To save surv_avg after checking that it is OK (save_ref_outputs should be set to TRUE)
+if(save_ref_outputs) write_rds(surv_avg, "_results/ref/surv_avg_expected.rds")
+  # To check reproducibility with checked file
+checkReproducibilityOutput(surv_avg, "_results/ref/surv_avg_expected.rds")
+
 raw_surv <- ggplot(data=surv_avg, aes(x=MismTreat, y=probs))+
   scale_colour_manual(values=c("grey27", "orangered2"))+ #"dodgerblue4"
   geom_jitter(data=surv_probs, aes(col=PhotoTreat), alpha=0.3, size=3, height=0.5, width=0.25)+
@@ -154,8 +189,20 @@ raw_surv <- ggplot(data=surv_avg, aes(x=MismTreat, y=probs))+
   theme(axis.title.y=element_text(size=18, vjust=2), axis.title.x=element_text(size=18, vjust=-0.5),
         axis.text=element_text(size=16), legend.text = element_text(size=16), legend.title=element_text(size=17))
 raw_surv 
-# ggsave(filename="_results/Survival_raw.png", plot=raw_surv , device="png", width=200, height=150, units="mm", dpi="print")
 
+  # To save the figure
+if(save_figures)
+  ggsave(filename="_results/Survival_raw.png", plot=raw_surv , device="png", width=200, height=150, units="mm", dpi="print")
+
+  # To save it as the reference file for reproducibility tests
+if(save_ref_outputs)
+  write_rds(raw_surv, "_results/ref/raw_surv_expected.rds")
+  
+  # To check correspondance with saved figure (reference)
+checkReproducibilityOutput(obtained = raw_surv, 
+                           ref_path = "_results/ref/raw_surv_expected.rds", # the expected figure saved as a .RDS
+                           ref_vis = "_results/Survival_raw.png", # the expected figure saved as a .PNG
+                           print = F)
 
 ### Fit binomial model ####
 #-----------------------------------  #
@@ -175,8 +222,21 @@ glm_final <- glm2
 summary(glm_final)# Estimates are log odds
 glm_res <- summary(glm_final)$coefficients %>% as.data.frame
 
-# write.csv(glm_res, file="_results/output_Surv_glmer.csv", row.names=T)
-# write.csv(rbind(anova1, anova2), file="_results/anova_Surv_glmer.csv", row.names=T)
+  # To save model outputs
+if(save_tables) {
+  write.csv(glm_res, file="_results/output_Surv_glmer.csv", row.names=T)
+  write.csv(rbind(anova1, anova2), file="_results/anova_Surv_glmer.csv", row.names=T)
+}
+  
+  # To save them as new references
+if(save_ref_outputs) {
+  write_rds(glm_res, file = "_results/ref/glm_surv_res_expected.rds")
+  write_rds(rbind(anova1, anova2), file = "_results/ref/glm_surv_anova_expected.rds")
+}
+  
+  # To check that model outputs match reference files
+checkReproducibilityOutput(glm_res, "_results/ref/glm_surv_res_expected.rds")
+checkReproducibilityOutput(rbind(anova1, anova2), "_results/ref/glm_surv_anova_expected.rds")
 
 ### Get predictions ####
 glm.pred <- d_surv[!duplicated(d_surv[,c("MotherID", "Treatment")]),] # each replicate assigned same prediction, so remove duplicates
@@ -194,7 +254,20 @@ pred$samplesize <- aggregate(CaterpillarID~MismTreat, data=d_surv, length)$Cater
 p_surv <- raw_surv + #geom_line(data=pred, aes(y=survprob*100)) +
   geom_smooth(data=pred, aes(y=survprob*100), se=F, col="red3")
 p_surv
-# ggsave(filename="_results/Survival_wpred_rev.png", plot=p_surv, device="png", width=200, height=150, units="mm", dpi="print")
+
+  # To save the figure
+if(save_figures)
+  ggsave(filename="_results/Survival_wpred_rev.png", plot=p_surv, device="png", width=200, height=150, units="mm", dpi="print")
+
+  # To save it as the reference file for reproducibility tests
+if(save_ref_outputs)
+  write_rds(p_surv, "_results/ref/p_surv_expected.rds")
+
+  # To check correspondance with saved figure (reference)
+checkReproducibilityOutput(obtained = p_surv, 
+                           ref_path = "_results/ref/p_surv_expected.rds", # the expected figure saved as a .RDS
+                           ref_vis = "_resultsSurvival_wpred_rev.png", # the expected figure saved as a .PNG
+                           print = F)
 
 rm(anova1, anova2, glm_res, glm1, glm2, pred, surv_probs, surv_avg, raw_surv) #cleanup
 
@@ -214,14 +287,25 @@ d_pupa <- d %>% mutate(PhotoTreat=gsub("(\\w+)Day.+","\\1",Treatment), MismTreat
          MismTreat=as.numeric(gsub("Day(.+)","\\1",MismTreat))) %>%
   mutate(MismTreat1=MismTreat+5, # no negatives
          MismTreat2=(MismTreat+5)^2) # squared term to add in model
-head(d_pupa) # 346 individuals survived until pupation
-nrow(d_pupa)/nrow(d)*100 # ~35%
+
+head(d_pupa) 
+n_survived <- nrow(d_pupa)
+print(n_survived) # 346 individuals survived until pupation
+checkReproducibilityValues(n_survived, 346) # automatic reproducibility checking
+percent_survived <- n_survived/nrow(d)*100 
+print(percent_survived) # ~35%
+checkReproducibilityValues(percent_survived, 35.45082) # automatic reproducibility checking
 
 
 ### Visualize ####
 weight <- Rmisc::summarySE(d_pupa, measurevar="PupaWeight", groupvars=c("MismTreat", "PhotoTreat"))
 weight$pos <- ifelse(is.na(weight$se)==T, 0, weight$se) # position of sample size labels
 weight
+
+  # Saving reference weight file
+if(save_ref_outputs) write_rds(weight, "_results/ref/weight_expected.rds")
+  # Reproducibility checking
+checkReproducibilityOutput(weight, "_results/ref/weight_expected.rds")
 
 raw_weight <- ggplot(data=weight, aes(x=MismTreat, y=PupaWeight, col=PhotoTreat, fill=PhotoTreat))+
   scale_colour_manual(values=c("grey27", "orangered2"))+ #"dodgerblue4"
@@ -237,8 +321,20 @@ raw_weight <- ggplot(data=weight, aes(x=MismTreat, y=PupaWeight, col=PhotoTreat,
   theme(axis.title.y=element_text(size=18, vjust=2), axis.title.x=element_text(size=18, vjust=-0.5),
         axis.text=element_text(size=16), legend.text = element_text(size=16), legend.title=element_text(size=17))
 raw_weight  
-# ggsave(filename="_results/PupWeight_raw.png", plot=raw_weight , device="png", width=200, height=150, units="mm", dpi="print")
 
+# To save the figure
+if(save_figures)
+  ggsave(filename="_results/PupWeight_raw.png", plot=raw_weight , device="png", width=200, height=150, units="mm", dpi="print")
+  
+# To save it as the reference file for reproducibility tests
+if(save_ref_outputs)
+  write_rds(raw_weight, "_results/ref/raw_weight_expected.rds")
+
+# To check correspondance with saved figure (reference)
+checkReproducibilityOutput(obtained = raw_weight, 
+                           ref_path = "_results/ref/raw_weight_expected.rds", # the expected figure saved as a .RDS
+                           ref_vis = "_results/PupWeight_raw.png", # the expected figure saved as a .PNG
+                           print = F)
 
 ### Fit linear mixed model ####
 #-----------------------------------  #
@@ -268,8 +364,22 @@ plot(lm_final) #equal variance? ok
 qqnorm(resid(lm_final)) #normally distributed? ok
 qqline(resid(lm_final))
 
-# write.csv(lm_res, file="_results/output_PupaWeight_lmer.csv", row.names=T)
-# write.csv(rbind(anova1, anova2, anova3), file="_results/anova_PupaWeight_lmer.csv", row.names=T)
+
+# To save model outputs
+if(save_tables) {
+  write.csv(lm_res, file="_results/output_PupaWeight_lmer.csv", row.names=T)
+  write.csv(rbind(anova1, anova2, anova3), file="_results/anova_PupaWeight_lmer.csv", row.names=T)
+}
+
+# To save them as new references
+if(save_ref_outputs) {
+  write_rds(lm_res, file = "_results/ref/lm_weight_res_expected.rds")
+  write_rds(rbind(anova1, anova2, anova3), file = "_results/ref/lm_weight_anova_expected.rds")
+}
+
+# To check that model outputs match reference files
+checkReproducibilityOutput(lm_res, "_results/ref/lm_weight_res_expected.rds")
+checkReproducibilityOutput(rbind(anova1, anova2, anova3), "_results/ref/lm_weight_anova_expected.rds")
 
 ### Get predictions ####
 lm.pred <- d_pupa[!duplicated(d_pupa[,c("MotherID", "Treatment")]),] # each replicate assigned same prediction, so remove duplicates
@@ -287,7 +397,20 @@ p_weight <- raw_weight + #geom_line(data=pred1, aes(y=pred)) +
   geom_text(data=filter(weight, PhotoTreat=="Changing"),aes(label=N, y=PupaWeight-pos-1.5), col="black", size=4, fontface="bold")+
   geom_text(data=filter(weight, PhotoTreat=="Constant"),aes(label=N, y=PupaWeight+pos+2.3), col="black", size=4, fontface="bold")
 p_weight
-# ggsave(filename="_results/PupWeight_wpred_rev.png", plot=p_weight, device="png", width=200, height=150, units="mm", dpi="print")
+
+# To save the figure
+if(save_figures)
+  ggsave(filename="_results/PupWeight_wpred_rev.png", plot=p_weight, device="png", width=200, height=150, units="mm", dpi="print")
+  
+# To save it as the reference file for reproducibility tests
+if(save_ref_outputs)
+  write_rds(p_weight, "_results/ref/p_weight_expected.rds")
+
+# To check correspondance with saved figure (reference)
+checkReproducibilityOutput(obtained = p_weight, 
+                           ref_path = "_results/ref/p_weight_expected.rds", # the expected figure saved as a .RDS
+                           ref_vis = "_results/PupWeight_wpred_rev.png", # the expected figure saved as a .PNG
+                           print = F)
 
 
 #--------------------------------------------  #
@@ -316,8 +439,7 @@ fig2 <-
   bgcolor('white')
 
   # sate save_figures to TRUE to save the figure
-if(save_figures == T) {
-  
+if(save_figures) 
   ggplot2::ggsave(filename = "_results/figure_2.png",
                   fig2, 
                   device = "png", 
@@ -325,7 +447,18 @@ if(save_figures == T) {
                   height = 150, 
                   units = "mm", 
                   dpi = "print")
-}
+
+# To save it as the reference file for reproducibility tests
+if(save_ref_outputs)
+  write_rds(fig2, "_results/ref/fig2_expected.rds")
+
+# To check correspondance with saved figure (reference)
+checkReproducibilityOutput(obtained = fig2, 
+                           ref_path = "_results/ref/fig2_expected.rds", # the expected figure saved as a .RDS
+                           ref_vis = "_results/fig2.png", # the expected figure saved as a .PNG
+                           print = T)
+  # does not work for such figures, apparently
+
 
 
 #--------------------------------------------  #
@@ -374,8 +507,15 @@ RelFit_means <- Rmisc::summarySE(RelFit, measurevar="rel", groupvars=c("MismTrea
 RelFit_means$samplesize <- aggregate(MotherID~MismTreat, data=d_surv, length)$MotherID # number of caterpillars curve is based on = all
 RelFit_means$curve <- curve$rel
 head(RelFit_means)
-# write.csv(RelFit_means, file="_results/RelFitness_rev.csv", row.names=F)
 
+  # To save RelFit_means
+if(save_tables) write.csv(RelFit_means, file="_results/RelFitness_rev.csv", row.names=F)
+  # To save it as a new reference
+if(save_ref_outputs) write_rds(RelFit_means, file = "_results/ref/RelFit_means_expected.rds")
+  # To check that the table matches the reference file
+checkReproducibilityOutput(RelFit_means, "_results/ref/RelFit_means_expected.rds")
+
+### Visualize predictions ####
 p_relfit <- ggplot(data=RelFit, aes(x=MismTreat, y=rel)) +
   geom_jitter(size=3, alpha=0.4, height=0, width=0.25, shape=21, fill="dodgerblue2", col="dodgerblue4")+
   geom_point(data=RelFit_means, size=5) +
@@ -390,7 +530,21 @@ p_relfit <- ggplot(data=RelFit, aes(x=MismTreat, y=rel)) +
   theme(axis.title.y=element_text(size=18, vjust=2), axis.title.x=element_text(size=18, vjust=-0.5),
         axis.text=element_text(size=16), legend.text = element_text(size=16), legend.title=element_text(size=17))
 p_relfit
-# ggsave(filename="_results/FitnessCurve_rev.png", plot=p_relfit, device="png", width=200, height=150, units="mm", dpi="print")
+
+# To save the figure
+if(save_figures)
+  ggsave(filename="_results/FitnessCurve_rev.png", plot=p_relfit, device="png", width=200, height=150, units="mm", dpi="print")
+  
+# To save it as the reference file for reproducibility tests
+if(save_ref_outputs)
+  write_rds(p_relfit, "_results/ref/p_relfit_expected.rds")
+
+# To check correspondance with saved figure (reference)
+checkReproducibilityOutput(obtained = p_relfit, 
+                           ref_path = "_results/ref/p_relfit_expected.rds", # the expected figure saved as a .RDS
+                           ref_vis = "_results/FitnessCurve_rev.png", # the expected figure saved as a .PNG
+                           print = F)
+
 
 ### Average fitness loss per day ####
 #----------------------------------  #
@@ -427,6 +581,19 @@ mean(fitness_loss_hatchedLater$fitness_loss, na.rm = T)
 fitness_loss_hatchedLater %>% dplyr::slice(which.max(fitness_loss))
 # Max value -> reported as 24% in paper, but 29% here? Did I misunderstood?
 
+  # To save output tables
+if(save_tables) {
+  write.csv(fitness_loss_hatchedEarlier, file="_results/fitness_loss_hatchedEarlier.csv")
+  write.csv(fitness_loss_hatchedLater, file="_results/fitness_loss_hatchedEarlier.csv")
+}
+  # To save them as new references
+if(save_ref_outputs) {
+  write_rds(fitness_loss_hatchedEarlier, file = "_results/ref/fitness_loss_hatchedEarlier_expected.rds")
+  write_rds(fitness_loss_hatchedLater, file = "_results/ref/fitness_loss_hatchedLater.rds")
+}
+  # To check that tables match the reference files
+checkReproducibilityOutput(fitness_loss_hatchedEarlier, "_results/ref/fitness_loss_hatchedEarlier_expected.rds")
+checkReproducibilityOutput(fitness_loss_hatchedLater, "_results/ref/fitness_loss_hatchedLater.rds")
 
 #--------------------------------------------  #
 ## Session info ####
