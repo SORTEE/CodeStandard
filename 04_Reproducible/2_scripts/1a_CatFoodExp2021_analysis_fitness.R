@@ -3,29 +3,28 @@
 # Either hatching on day of budburst (Day0), before (Day-4 to -1), or after (Day+1 to +5)
 # Disentangle effects of photoperiod and food quality: photoperiod treatment (changing or constant)
 
-# before start download the dataset 'CatFood2021_deposit.csv'
-# from Dryad repository: https://doi.org/10.5061/dryad.m905qfv5p
+  # This is the (hopefully?) improved version of the code following the CodeStandard Hackathon
+  # Concerning section 4 (reproducibility)
 
-# the dataset should be saved in the folder 1_data
-
+# Initiation ####
+#----------------------------------- #
 
 # Open R project in main folder
 
 # Restore library
 renv::restore()
 
-# Load (and install) packages
-#-----------------------------------
-
-  # If error when downloading digest :
-    # (this happens, check https://stackoverflow.com/questions/48548767/can-not-download-digest-package-in-r)
+# If error when downloading digest :
+# (this happens, check https://stackoverflow.com/questions/48548767/can-not-download-digest-package-in-r)
 if(!require(digest))
   install.packages('digest', repos='http://cran.us.r-project.org')
 
-  # We will also use this package so if not installed:
+# We will use this additional package so if not installed:
 if(!require(ggpubr)) 
   install.packages('ggpubr') 
 
+# Load packages ####
+#----------------------------------- #
 
 library(tidyverse)
 library(cowplot)
@@ -36,8 +35,8 @@ library(Rmisc)
 library(rdryad)
 library(ggpubr) # To arrange multiple figures
 
-# User configuration
-#-----------------------------------
+# User configuration ####
+#----------------------------------- #
 
   # set to TRUE to save figures
 save_figures <- FALSE
@@ -47,8 +46,8 @@ if (save_figures && !dir.exists("_results")) {
   dir.create("_results")
 }
 
-# Load data
-#-----------------------------------
+# Load data ####
+#----------------------------------- #
 
 # Check if data is present in folder
 file_name <- "CatFood2021_deposit.csv"
@@ -82,19 +81,24 @@ d <- dplyr::rename(d, MotherID = TubeID)
 length(unique(d$MotherID)) # should be 22 mothers
 table(d$Treatment) # photoperiod and mismatch treatment coded in one variable
 
-# Descriptives
-#-----------------------------------
+# Descriptives ####
+#----------------------------------- #
 
 # N per Area
 table(d[!duplicated(d$MotherID), "AreaShortName"])
 
 
-#---------------------------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------------------------  #
 # Fitness curve ####
-#----------------------------------
-# RQ1: What are the fitness consequences of day to day timing (a)synchrony with budburst? ####
+#----------------------------------  #
 
-# Survival data ####
+  # RQ1: What are the fitness consequences of day to day timing (a)synchrony with budburst?
+
+#----------------------------------- #
+## Survival analysis ####
+#----------------------------------- #
+
+  ### Survival data ####
 d_surv <- d %>% mutate(PhotoTreat=gsub("(\\w+)Day.+","\\1",Treatment), MismTreat=gsub("\\w+(Day.+)","\\1",Treatment)) %>% 
   select(MotherID, Treatment, PhotoTreat, MismTreat, CaterpillarID, DeadAprilDay, PupationAprilDay) %>%
   pivot_longer(cols=c(DeadAprilDay, PupationAprilDay), names_to="Info", values_to="TimeOfEvent") %>%
@@ -113,18 +117,14 @@ table(d_surv$MismTreat2)
 
 length(unique(d_surv$CaterpillarID)) # should be 976
 
-
-#-----------------------------------
-# Survival analysis ####
-#-----------------------------------
 levels(d_surv$Treatment)
 levels(d_surv$PhotoTreat)
-levels(d_surv$MismTreatf) # as factor or not? Marcel thinks not ####
+levels(d_surv$MismTreatf) # as factor or not? Marcel thinks not
 levels(d_surv$MotherID)
 table(d_surv$TimeOfEvent)
 table(d_surv$Event) # this variable corresponds to "survival" as defined in the paper (e.g., the response variable in the first binomial mixed-effect model)
 
-# Visualize survival probabilities ####
+### Visualize survival probabilities ####
 head(d_surv)
 
 surv_probs <- aggregate(Event~MismTreat + PhotoTreat + MotherID, d_surv, sum) # per mother
@@ -150,8 +150,8 @@ raw_surv
 # ggsave(filename="_results/Survival_raw.png", plot=raw_surv , device="png", width=200, height=150, units="mm", dpi="print")
 
 
-# Fit binomial model ####
-#-----------------------------------
+### Fit binomial model ####
+#-----------------------------------  #
 head(d_surv) # test if probability of survival differs between treatments
 
 glm1 <- glmer(Event ~ (MismTreat1 + MismTreat2)*PhotoTreat + (1|MotherID), family=binomial, data=d_surv,
@@ -163,7 +163,7 @@ glm2 <- update(glm1, ~ . -MismTreat1:PhotoTreat - MismTreat2:PhotoTreat) # simpl
 anova2 <- drop1(glm2,test="Chi") %>% as.data.frame #no effect of PhotoTreatment, but effect of MismTreat and MismTreat^2
 anova2$mod <- "glm2"
 
-# Final model ####
+### Final model ####
 glm_final <- glm2
 summary(glm_final)# Estimates are log odds
 glm_res <- summary(glm_final)$coefficients %>% as.data.frame
@@ -171,7 +171,7 @@ glm_res <- summary(glm_final)$coefficients %>% as.data.frame
 # write.csv(glm_res, file="_results/output_Surv_glmer.csv", row.names=T)
 # write.csv(rbind(anova1, anova2), file="_results/anova_Surv_glmer.csv", row.names=T)
 
-# Get predictions ####
+### Get predictions ####
 glm.pred <- d_surv[!duplicated(d_surv[,c("MotherID", "Treatment")]),] # each replicate assigned same prediction, so remove duplicates
 glm.pred$pred <- predict(glm_final, newdata=glm.pred, type="response") # predictions are probability of dying now
 glm.pred$survprob <- (1-glm.pred$pred)
@@ -179,7 +179,7 @@ aggregate(survprob~MismTreat, data=glm.pred, mean) # peak at Day2
 glm.pred$rel <- glm.pred$survprob/mean(filter(glm.pred, MismTreat==1)$survprob) # expressive relative to peak
 head(glm.pred)
 
-# Visualize predictions ####
+### Visualize predictions ####
 pred <- Rmisc::summarySE(glm.pred, measurevar="survprob", groupvars=c("MismTreat")) # average of two photoperiod treatments
 pred$samplesize <- aggregate(CaterpillarID~MismTreat, data=d_surv, length)$CaterpillarID
 
@@ -192,9 +192,9 @@ p_surv
 rm(anova1, anova2, glm_res, glm1, glm2, pred, surv_probs, surv_avg, raw_surv) #cleanup
 
 
-#-----------------------------------
-# Pupation weight analysis ####
-#-----------------------------------
+#-----------------------------------  #
+## Pupation weight analysis ####
+#-----------------------------------  #
 head(d)
 
 d_pupa <- d %>% mutate(PhotoTreat=gsub("(\\w+)Day.+","\\1",Treatment), MismTreat=gsub("\\w+(Day.+)","\\1",Treatment), PupaWeight=PupaWeight_ingrams*1000) %>%
@@ -211,7 +211,7 @@ head(d_pupa) # 346 individuals survived until pupation
 nrow(d_pupa)/nrow(d)*100 # ~35%
 
 
-# Visualize ####
+### Visualize ####
 weight <- Rmisc::summarySE(d_pupa, measurevar="PupaWeight", groupvars=c("MismTreat", "PhotoTreat"))
 weight$pos <- ifelse(is.na(weight$se)==T, 0, weight$se) # position of sample size labels
 weight
@@ -233,8 +233,8 @@ raw_weight
 # ggsave(filename="_results/PupWeight_raw.png", plot=raw_weight , device="png", width=200, height=150, units="mm", dpi="print")
 
 
-# Fit linear mixed model ####
-#-----------------------------------
+### Fit linear mixed model ####
+#-----------------------------------  #
 lm1 <- lmer(PupaWeight ~ (MismTreat1 + MismTreat2)*PhotoTreat + (1|MotherID), data=d_pupa)
 anova1 <- anova(lm1) %>% as.data.frame() # interaction not significant
 anova1$mod <- "lm1"
@@ -252,7 +252,7 @@ lm4 <- lmer(PupaWeight ~ -1 + MismTreat1 + PhotoTreat + (1|MotherID), data=filte
 anova(lm4) # yes
 
 
-# Final model ####
+### Final model ####
 lm_final <- lm3
 summary(lm_final)
 lm_res <- summary(lm_final)$coefficients %>% as.data.frame
@@ -264,17 +264,17 @@ qqline(resid(lm_final))
 # write.csv(lm_res, file="_results/output_PupaWeight_lmer.csv", row.names=T)
 # write.csv(rbind(anova1, anova2, anova3), file="_results/anova_PupaWeight_lmer.csv", row.names=T)
 
-# Get predictions ####
+### Get predictions ####
 lm.pred <- d_pupa[!duplicated(d_pupa[,c("MotherID", "Treatment")]),] # each replicate assigned same prediction, so remove duplicates
 lm.pred$pred <- predict(lm_final, newdata=lm.pred, type="response")
 head(lm.pred)
 
-# Visualize predictions ####
+### Visualize predictions ####
 pred1 <- Rmisc::summarySE(lm.pred, measurevar="pred", groupvars=c("MismTreat", "PhotoTreat")) # significant effect of photoperiod, so show separate means
 pred1$samplesize <- weight$N
 pred1$pos <- ifelse(is.na(pred1$se)==T, 0, pred1$se) # position of sample size labels
 
-# add predictions to raw data figure
+## add predictions to raw data figure
 p_weight <- raw_weight + #geom_line(data=pred1, aes(y=pred)) +
   geom_smooth(data=pred1, aes(y=pred, col=PhotoTreat), se=F, method=lm)+
   geom_text(data=filter(weight, PhotoTreat=="Changing"),aes(label=N, y=PupaWeight-pos-1.5), col="black", size=4, fontface="bold")+
@@ -282,9 +282,10 @@ p_weight <- raw_weight + #geom_line(data=pred1, aes(y=pred)) +
 p_weight
 # ggsave(filename="_results/PupWeight_wpred_rev.png", plot=p_weight, device="png", width=200, height=150, units="mm", dpi="print")
 
-#--------------------------------------------
-# Making figure 2 ####
-#--------------------------------------------
+
+#--------------------------------------------  #
+## Making figure 2 ####
+#--------------------------------------------  #
 
 # Making figure 2 entirely code-based
 # common_legend in ggarrange() does not work properly here
@@ -320,15 +321,15 @@ if(save_figures == T) {
 }
 
 
-#--------------------------------------------
-# Get fitness curve ####
-#--------------------------------------------
+#--------------------------------------------  #
+## Get fitness curve ####
+#--------------------------------------------  #
 
-# Don't care about PhotoTreat effect, drop from models ####
+# Don't care about PhotoTreat effect, drop from models
 glm_fit <- glmer(Event ~ MismTreat1 + MismTreat2 + (1 | MotherID), family="binomial", data=d_surv)
 lm_fit <- lmer(PupaWeight ~ MismTreat1 + (1 | MotherID), data=d_pupa)
 
-# Get predictions to use for curve ####
+### Get predictions to use for curve ####
 glm.fit <- d_surv[!duplicated(d_surv[,c("MotherID", "MismTreatf")]),] # each replicate assigned same prediction, so remove duplicates
 glm.fit$pred <- predict(glm_fit, newdata=glm.fit, type="response") # predictions are probability of dying now
 glm.fit$survpred <- (1-glm.fit$pred)
@@ -340,8 +341,8 @@ head(glm.fit) # pred = probability of dying, survpred=1-pred, 220 observations =
 head(lm.fit) # pred=predicted weight from lmer, only 154 observations
 
 
-# Fit curve to absolute fitness ####
-#-----------------------------------
+### Fit curve to absolute fitness ####
+#-----------------------------------  #
 RelFit <- merge(glm.fit[,c("MotherID", "MismTreat", "survpred")], lm.fit[,c("MotherID", "MismTreat", "pred")], by=c("MotherID", "MismTreat"), all=T)
 colnames(RelFit)[c(3,4)] <- c("survpred", "pupwpred")
 RelFit$Fit <- RelFit$survpred*RelFit$pupwpred # multiply absolute values
@@ -349,7 +350,7 @@ head(RelFit) # can only do for 154 observations, clutches with >=1 caterpillar s
 table(RelFit$MismTreat, is.na(RelFit$Fit)) # for the other clutches, fitness = 0
 RelFit$Fit2 <- ifelse(is.na(RelFit$Fit)==T, 0, RelFit$Fit)
 
-# loess model to describe the curve ####
+### loess model to describe the curve ####
 loess_mod <- loess(Fit2~ -1 + MismTreat,  data=RelFit) 
 summary(loess_mod)
 
@@ -384,8 +385,8 @@ p_relfit <- ggplot(data=RelFit, aes(x=MismTreat, y=rel)) +
 p_relfit
 # ggsave(filename="_results/FitnessCurve_rev.png", plot=p_relfit, device="png", width=200, height=150, units="mm", dpi="print")
 
-# Average fitness loss per day ####
-#----------------------------------
+### Average fitness loss per day ####
+#----------------------------------  #
 
   # 1. Hatching earlier than budburst date
 fitness_loss_hatchedEarlier <- 
@@ -419,5 +420,9 @@ mean(fitness_loss_hatchedLater$fitness_loss, na.rm = T)
 fitness_loss_hatchedLater %>% dplyr::slice(which.max(fitness_loss))
 # Max value -> reported as 24% in paper, but 29% here? Did I misunderstood?
 
+
+#--------------------------------------------  #
+## Session info ####
+#--------------------------------------------  #
 
 sessionInfo() %>% capture.output(file="_src/env_CatFoodExp2021_analysis.txt")
