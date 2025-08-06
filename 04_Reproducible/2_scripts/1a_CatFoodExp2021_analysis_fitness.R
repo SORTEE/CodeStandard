@@ -6,11 +6,13 @@
   # This is the (hopefully?) improved version of the code following the CodeStandard Hackathon
   # Concerning section 4 (reproducibility)
 
+# !!!! Important !!!!
+# In order for the script to work properly, please open R project in main folder
+
 # Initiation ####
 #----------------------------------- #
 
-# Open R project in main folder
-
+# Clearing environment
 rm(list=ls())
 
 # Restore library
@@ -24,6 +26,9 @@ if(!require(digest))
 # We will use this additional package so if not installed:
 if(!require(ggpubr)) 
   install.packages('ggpubr') 
+
+# Setting seed for random processes
+set.seed(147)
 
 # Load packages ####
 #----------------------------------- #
