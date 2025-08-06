@@ -14,8 +14,19 @@
 # Restore library
 renv::restore()
 
-# Load packages
+# Load (and install) packages
 #-----------------------------------
+
+  # If error when downloading digest :
+    # (this happens, check https://stackoverflow.com/questions/48548767/can-not-download-digest-package-in-r)
+if(!require(digest))
+  install.packages('digest', repos='http://cran.us.r-project.org')
+
+  # We will also use this package so if not installed:
+if(!require(ggpubr)) 
+  install.packages('ggpubr') 
+
+
 library(tidyverse)
 library(cowplot)
 theme_set(theme_cowplot()) #white background instead of grey -> don't load if want grey grid
@@ -23,10 +34,9 @@ library(lme4)
 library(lmerTest)
 library(Rmisc)
 library(rdryad)
-if(!require(ggpubr)) install.packages('ggpubr') # if not installed
 library(ggpubr) # To arrange multiple figures
 
-# User configuration ####
+# User configuration
 #-----------------------------------
 
   # set to TRUE to save figures
@@ -37,7 +47,7 @@ if (save_figures && !dir.exists("_results")) {
   dir.create("_results")
 }
 
-# Load data ####
+# Load data
 #-----------------------------------
 
 # Check if data is present in folder
@@ -46,6 +56,7 @@ file_path <- file.path("1_data", file_name)
 file_exists <- file.exists(file_path)
 
 # If not, automatically download it from Dryad
+  # -> that way, this does not require user input
 if(file_exists == F) {
   
   # DOI to get data online:
@@ -275,6 +286,7 @@ p_weight
 # Making figure 2 ####
 #--------------------------------------------
 
+# Making figure 2 entirely code-based
 # common_legend in ggarrange() does not work properly here
   # (to get legend on the right)
 # so we use a trick by combining ggpubr and cowplot
