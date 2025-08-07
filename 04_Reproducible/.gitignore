@@ -5,4 +5,4 @@
 *.DS_Store
 
 1_data/*.csv
-
+_results/

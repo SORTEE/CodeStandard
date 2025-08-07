@@ -1,4 +1,5 @@
-# checkReproducibilityOutput() checks that an output corresponds to a reference file
+# checkReproducibilityOutput() checks that an output corresponds to a reference file saved as a .rds
+  #!! Currently this does not work for "complex" figures generated with ggpubr/cowplot
 
   # Arguments:
   # -- obtained: the obtained output, can be any object (e.g. a data.frame, a tibble, a figure)
@@ -24,15 +25,11 @@ checkReproducibilityOutput <- function(obtained, ref_path, ref_vis = NULL, print
   sim <- all.equal(obtained, expected)
   
   obtained_name <- deparse(substitute(obtained))
-  
-    # if an additional reference path is given (e.g. figure path as a PNG)
-    # message will link to this path if output does not match the expected
-  if(!is.null(ref_vis)) ref_path <- ref_vis
-  
+
   if(isTRUE(sim)) message(paste(obtained_name, "corresponds to the expected output")) else {
     message(paste("Warning:", obtained_name, "does not correspond to the expected output"))
     message(paste("Check",  ref_path , "for expected output"))
-    
+    message("Or set `read_ref_output` to TRUE to read it.")
     if(print) {
       message("Elements of dissimilarity are displayed below")
       print(sim)
