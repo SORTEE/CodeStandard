@@ -609,34 +609,42 @@ if(read_ref_outputs) readReferenceFile("p_relfit")
   # 1. Hatching earlier than budburst date
 fitness_loss_hatchedEarlier <- 
 RelFit_means %>%
-  dplyr::select(MismTreat, rel) %>%
+  dplyr::select(MismTreat, curve) %>%
   dplyr::filter(MismTreat <= 2) %>%
-  dplyr::rename("rel_fitness" = "rel") %>%
+  dplyr::rename("pred_fitness" = "curve") %>%
   # What would have been the mean fitness if hatched one day later?
-  mutate(lagged_fitness = lead(rel_fitness)) %>%
-  mutate(fitness_loss = (lagged_fitness - rel_fitness) / lagged_fitness)
+  mutate(lagged_fitness = lead(pred_fitness)) %>%
+  mutate(fitness_loss = lagged_fitness - pred_fitness)
 
 fitness_loss_hatchedEarlier %>% print
-mean(fitness_loss_hatchedEarlier$fitness_loss, na.rm = T) 
-  # Average value -> reported as 14% in paper, but 53% here? Did I misunderstood?
-fitness_loss_hatchedEarlier %>% dplyr::slice(which.max(fitness_loss))
-  # Max value -> reported as 32% in paper, but 89% here? Did I misunderstood?
+  # Mean value ? Should be 14%
+fitness_loss_earlier <- na.omit(fitness_loss_hatchedEarlier$fitness_loss)
+mean_fitness_loss_earlier <- exp(mean(log(fitness_loss_earlier))) %>% round(2)
+checkReproducibilityValues(mean_fitness_loss_earlier, 0.14)
+  # Max value ? Should be 32%
+fitness_loss_hatchedEarlier %>% dplyr::slice(which.max(fitness_loss)) # corresponds to day -1
+max_fitness_loss_earlier <- fitness_loss_hatchedEarlier$fitness_loss %>% max(na.rm = T) %>% round(2)
+checkReproducibilityValues(max_fitness_loss_earlier, 0.32)
 
   # 2. Hatching later than budburst date
 fitness_loss_hatchedLater <- 
 RelFit_means %>%
-  dplyr::select(MismTreat, rel) %>%
+  dplyr::select(MismTreat, curve) %>%
   dplyr::filter(MismTreat >= 2) %>%
-  dplyr::rename("rel_fitness" = "rel") %>%
+  dplyr::rename("pred_fitness" = "curve") %>%
   # What would have been the mean fitness if hatched one day later?
-  mutate(lagged_fitness = lag(rel_fitness)) %>%
-  mutate(fitness_loss = (lagged_fitness - rel_fitness) / lagged_fitness)
+  mutate(lagged_fitness = lag(pred_fitness)) %>%
+  mutate(fitness_loss = lagged_fitness - pred_fitness)
 
 fitness_loss_hatchedLater %>% print
-mean(fitness_loss_hatchedLater$fitness_loss, na.rm = T) 
-# Average value -> reported as 6% in paper, but 18% here? Did I misunderstood?
-fitness_loss_hatchedLater %>% dplyr::slice(which.max(fitness_loss))
-# Max value -> reported as 24% in paper, but 29% here? Did I misunderstood?
+  # Mean value ? Should be 13% (although reported as 6% in paper)
+fitness_loss_Later <- na.omit(fitness_loss_hatchedLater$fitness_loss)
+mean_fitness_loss_Later <- exp(mean(log(fitness_loss_Later))) %>% round(2)
+checkReproducibilityValues(mean_fitness_loss_Later, 0.13)
+  # Max value ? Should be 32%
+fitness_loss_hatchedLater %>% dplyr::slice(which.max(fitness_loss)) # corresponds to day -1
+max_fitness_loss_Later <- fitness_loss_hatchedLater$fitness_loss %>% max(na.rm = T) %>% round(2)
+checkReproducibilityValues(max_fitness_loss_Later, 0.24)
 
   # To save output tables
 if(save_tables) {
