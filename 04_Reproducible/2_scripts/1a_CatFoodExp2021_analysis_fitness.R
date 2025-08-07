@@ -72,6 +72,8 @@ save_tables <- FALSE
 save_ref_outputs <- FALSE
   # set to TRUE to read reference outputs for comparison
 read_ref_outputs <- FALSE
+  # set to TRUE to save session info again
+save_session_info <- FALSE
 
   # this creates output directory if saving is enabled
 if (save_figures | save_tables && !dir.exists("_results")) {
@@ -660,5 +662,6 @@ if(read_ref_outputs) {
 ## Session info ####
 #--------------------------------------------  #
 
-sessionInfo() %>% 
+if(save_session_info) 
+  sessionInfo() %>% 
   capture.output(file="_src/env_CatFoodExp2021_analysis.txt")
