@@ -30,7 +30,7 @@ d <- read.csv("1_data/CatFood2021_deposit.csv")
 head(d)
 
 # renaming TubeID as MotherID to match the terminology used in the Statistical section of the paper
-d <- rename(d, MotherID = TubeID)
+d <- dplyr::rename(d, MotherID = TubeID)
 
 length(unique(d$MotherID)) # should be 22 mothers
 table(d$Treatment) # photoperiod and mismatch treatment coded in one variable
@@ -61,6 +61,7 @@ d_surv <- d %>% mutate(PhotoTreat=gsub("(\\w+)Day.+","\\1",Treatment), MismTreat
   mutate(MismTreat1=MismTreat+5, # no negatives to be able to fit squared term
          MismTreat2=(MismTreat+5)^2) # squared term to add in model
 # Vidisha coded it as TimeOfEvent=DeadAprilDay or PupationAprilDay, with event=Died or Survived
+
 head(d_surv)
 str(d_surv)
 table(d_surv$MismTreat2)

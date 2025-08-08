@@ -54,7 +54,7 @@ d <- read_csv(file_path)
 head(d)
 
 # renaming TubeID as MotherID to match the terminology used in the Statistical section of the paper
-d <- rename(d, MotherID = TubeID)
+d <- dplyr::rename(d, MotherID = TubeID)
 
 length(unique(d$MotherID)) # should be 22 mothers
 table(d$Treatment) # photoperiod and mismatch treatment coded in one variable
