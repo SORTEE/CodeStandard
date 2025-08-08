@@ -16,6 +16,12 @@ Natalie E. van Dis, ORCID ID: 0000-0002-9934-6751
 
 &nbsp;
 
+## General information
+All outputs were generated using R version 4.5.1 (R Core Team, 2025). Details about the R version, operating system, and loaded packages can be found in the [sessionInfo output file](_src/env_CatFoodExp2021_analysis.txt). 
+All used package versions were archived with `renv` library and can be restored using `renv::restore()` at the beginning of the script.
+
+&nbsp;
+
 ## Analysis and visualization of Experimental data
 R scripts to reproduce the analysis and visualization (incl. manuscript figures) of the 2021 winter moth caterpillar feeding experiment:
 

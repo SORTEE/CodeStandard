@@ -16,6 +16,7 @@ renv::restore()
 
 # Load packages
 #-----------------------------------
+library(rdryad)
 library(tidyverse)
 library(cowplot)
 theme_set(theme_cowplot()) #white background instead of grey -> don't load if want grey grid
@@ -23,14 +24,32 @@ library(lme4)
 library(lmerTest)
 library(Rmisc)
 
+# Create folders to store data and results ####
+#-----------------------------------
+sapply(c("1_data", "_results"),
+       function(i) 
+         if (! dir.exists(i)) dir.create(i))
+
+# Download data from dryad repository ####
+#-----------------------------------
+
+# Download dryad repo in rdryad cache
+doi <- "10.5061/dryad.m905qfv5p"
+tmp_files <- rdryad::dryad_download(doi)[[doi]]
+
+# Copy desired file to data folder
+file_name <- "CatFood2021_deposit.csv"
+file.copy(tmp_files[grepl(file_name, tmp_files)], 
+          "1_data", 
+          overwrite = TRUE)
 
 # Load data ####
 #-----------------------------------
-d <- read.csv("1_data/CatFood2021_deposit.csv")
+d <- read.csv(file.path("1_data", file_name))
 head(d)
 
 # renaming TubeID as MotherID to match the terminology used in the Statistical section of the paper
-d <- rename(d, MotherID = TubeID)
+d <- dplyr::rename(d, MotherID = TubeID)
 
 length(unique(d$MotherID)) # should be 22 mothers
 table(d$Treatment) # photoperiod and mismatch treatment coded in one variable
@@ -108,8 +127,8 @@ raw_surv
 #-----------------------------------
 head(d_surv) # test if probability of survival differs between treatments
 
-glm1 <- glmer(Event ~ (MismTreat1 + MismTreat2)*PhotoTreat + (1|MotherID), family=binomial, data=d_surv,
-              na.action="na.fail", control=glmerControl(calc.derivs=F)) # helps convergence
+glm1 <- lme4::glmer(Event ~ (MismTreat1 + MismTreat2)*PhotoTreat + (1|MotherID), family=binomial, data=d_surv,
+                    na.action="na.fail", control=glmerControl(calc.derivs=F)) # helps convergence
 anova1 <- drop1(glm1,test="Chi") %>% as.data.frame # interaction not significant; the use of Chi-square test to determine statistical significance should be explicitly mention in the paper
 anova1$mod <- "glm1"
 
@@ -167,6 +186,8 @@ nrow(d_pupa)/nrow(d)*100 # ~35%
 
 # Visualize ####
 weight <- Rmisc::summarySE(d_pupa, measurevar="PupaWeight", groupvars=c("MismTreat", "PhotoTreat"))
+# The warning message occurs because at Mismatch = -4 sample size is N = 1 for both treatments
+# and standard deviations cannot be computed
 weight$pos <- ifelse(is.na(weight$se)==T, 0, weight$se) # position of sample size labels
 weight
 
@@ -189,7 +210,7 @@ raw_weight
 
 # Fit linear mixed model ####
 #-----------------------------------
-lm1 <- lmer(PupaWeight ~ (MismTreat1 + MismTreat2)*PhotoTreat + (1|MotherID), data=d_pupa)
+lm1 <- lmerTest::lmer(PupaWeight ~ (MismTreat1 + MismTreat2)*PhotoTreat + (1|MotherID), data=d_pupa)
 anova1 <- anova(lm1) %>% as.data.frame() # interaction not significant
 anova1$mod <- "lm1"
 
@@ -202,7 +223,7 @@ anova3 <- anova(lm3) %>% as.data.frame() # PhotoTreat and MismTreat significant
 anova3$mod <- "lm3"
 
 # Still there if exclude first time point with low sample size?
-lm4 <- lmer(PupaWeight ~ -1 + MismTreat1 + PhotoTreat + (1|MotherID), data=filter(d_pupa, MismTreat!=-4))
+lm4 <- lmerTest::lmer(PupaWeight ~ -1 + MismTreat1 + PhotoTreat + (1|MotherID), data=filter(d_pupa, MismTreat!=-4))
 anova(lm4) # yes
 
 
@@ -225,6 +246,8 @@ head(lm.pred)
 
 # Visualize predictions ####
 pred1 <- Rmisc::summarySE(lm.pred, measurevar="pred", groupvars=c("MismTreat", "PhotoTreat")) # significant effect of photoperiod, so show separate means
+# The warning message occurs because at Mismatch = -4 sample size is N = 1 for both treatments
+# and standard deviations cannot be computed
 pred1$samplesize <- weight$N
 pred1$pos <- ifelse(is.na(pred1$se)==T, 0, pred1$se) # position of sample size labels
 
@@ -243,8 +266,8 @@ p_weight
 #--------------------------------------------
 
 # Don't care about PhotoTreat effect, drop from models ####
-glm_fit <- glmer(Event ~ MismTreat1 + MismTreat2 + (1 | MotherID), family="binomial", data=d_surv)
-lm_fit <- lmer(PupaWeight ~ MismTreat1 + (1 | MotherID), data=d_pupa)
+glm_fit <- lme4::glmer(Event ~ MismTreat1 + MismTreat2 + (1 | MotherID), family="binomial", data=d_surv)
+lm_fit <- lmerTest::lmer(PupaWeight ~ MismTreat1 + (1 | MotherID), data=d_pupa)
 
 # Get predictions to use for curve ####
 glm.fit <- d_surv[!duplicated(d_surv[,c("MotherID", "MismTreatf")]),] # each replicate assigned same prediction, so remove duplicates
@@ -295,7 +318,7 @@ p_relfit <- ggplot(data=RelFit, aes(x=MismTreat, y=rel)) +
   geom_text(data=RelFit_means,aes(label=samplesize, y=rel+0.12), col="black", size=5, fontface="bold")+ # number of caterpillars
   geom_hline(yintercept=1, linetype="dashed")+
   labs(y="Relative fitness", x="Mismatch with oak budburst date (days)")+
-  scale_y_continuous(lim=c(0,1.21), breaks=seq(0,1.6, by=0.2))+ scale_x_continuous(breaks=seq(-4,5, by=1))+ #lim=c(-0.1,1.3)
+  scale_y_continuous(breaks=seq(0,1.2, by=0.2))+ scale_x_continuous(breaks=seq(-4,5, by=1))+ #lim=c(-0.1,1.3)
   theme(legend.position="none")+
   theme(axis.title.y=element_text(size=18, vjust=2), axis.title.x=element_text(size=18, vjust=-0.5),
         axis.text=element_text(size=16), legend.text = element_text(size=16), legend.title=element_text(size=17))

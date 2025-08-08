@@ -3,30 +3,89 @@
 # Either hatching on day of budburst (Day0), before (Day-4 to -1), or after (Day+1 to +5)
 # Disentangle effects of photoperiod and food quality: photoperiod treatment (changing or constant)
 
-# before start download the dataset 'CatFood2021_deposit.csv'
-# from Dryad repository: https://doi.org/10.5061/dryad.m905qfv5p
+  # This is the (hopefully?) improved version of the code following the CodeStandard Hackathon
+  # Concerning section 4 (reproducibility)
 
-# the dataset should be saved in the folder 1_data
+# !!!! Important !!!!
+# In order for the script to work properly, please open R project in main folder
 
+# Initiation ####
+#----------------------------------- #
 
-# Open R project in main folder
+# Clear environment
+rm(list=ls())
 
 # Restore library
 renv::restore()
 
-# Load packages
-#-----------------------------------
+# If error when downloading digest :
+  # (this happens, check https://stackoverflow.com/questions/48548767/can-not-download-digest-package-in-r)
+if(!require(digest))
+  install.packages('digest', repos='http://cran.us.r-project.org')
+
+# We will use this additional package so if not installed:
+if(!require(ggpubr)) 
+  install.packages('ggpubr') 
+
+# Same for this one:
+if(!require(rdryad)) 
+  install.packages('rdryad') 
+
+# Setting seed for random processes
+set.seed(147)
+
+# Load packages ####
+#----------------------------------- #
+
 library(tidyverse)
 library(cowplot)
 theme_set(theme_cowplot()) #white background instead of grey -> don't load if want grey grid
 library(lme4)
 library(lmerTest)
 library(Rmisc)
-library(rdryad)
+library(rdryad) # To download automatically from Dryad
+library(ggpubr) # To arrange multiple figures
 
+# Load functions ####
+#----------------------------------- #
+
+pathF <- c("2_scripts/Functions/") # They are stored here
+functions <- list.files(pathF)
+sapply(functions, function(file) source(paste0(pathF, file))) %>% invisible
+
+# Checking file presence for reproducibility checks ####
+#----------------------------------------------------- #
+
+  # To verify that reference files for reproducibility checking are present
+checkReferenceFilePresence()
+  # To verify that outputs were already saved and stored in "_results" folder
+checkOutputPresence()
+
+# User configuration ####
+#----------------------------------- #
+
+  # set to TRUE to save figures (as .png files)
+save_figures <- FALSE
+  # set to TRUE to save tables (as .csv files)
+save_tables <- FALSE
+  # set to TRUE to save reference outputs (as .rds files)
+save_ref_outputs <- FALSE
+  # set to TRUE to read reference outputs for comparison
+read_ref_outputs <- FALSE
+  # set to TRUE to save session info again
+save_session_info <- FALSE
+
+  # this creates output directory if saving is enabled
+if (save_figures | save_tables && !dir.exists("_results")) {
+  dir.create("_results")
+}
+
+if (save_ref_outputs && !dir.exists("_results/ref")) {
+  dir.create("_results/ref")
+}
 
 # Load data ####
-#-----------------------------------
+#----------------------------------- #
 
 # Check if data is present in folder
 file_name <- "CatFood2021_deposit.csv"
@@ -34,6 +93,7 @@ file_path <- file.path("1_data", file_name)
 file_exists <- file.exists(file_path)
 
 # If not, automatically download it from Dryad
+  # -> that way, this does not require user input
 if(file_exists == F) {
   
   # DOI to get data online:
@@ -56,53 +116,72 @@ head(d)
 # renaming TubeID as MotherID to match the terminology used in the Statistical section of the paper
 d <- dplyr::rename(d, MotherID = TubeID)
 
-length(unique(d$MotherID)) # should be 22 mothers
-table(d$Treatment) # photoperiod and mismatch treatment coded in one variable
+# Number of mothers: should be 22
+nb_mothers <- length(unique(d$MotherID))
+print(nb_mothers)
+checkReproducibilityValues(nb_mothers, 22) # checking reproducibility
 
+# Photoperiod and mismatch treatment coded in one variable
+table(d$Treatment) 
 
-# Descriptives
-#-----------------------------------
+# Descriptives ####
+#----------------------------------- #
 
-# N per Area
-table(d[!duplicated(d$MotherID), "AreaShortName"])
+# N females per Area
+fem_per_area <- table(d[!duplicated(d$MotherID), "AreaShortName"])
+print(fem_per_area)
+checkReproducibilityValues(fem_per_area, c(3, 6, 6, 7)) # checking reproducibility
 
-
-#---------------------------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------------------------  #
 # Fitness curve ####
-#----------------------------------
-# RQ1: What are the fitness consequences of day to day timing (a)synchrony with budburst? ####
+#----------------------------------  #
 
-# Survival data ####
+  # RQ1: What are the fitness consequences of day to day timing (a)synchrony with budburst?
+
+#----------------------------------- #
+## Survival analysis ####
+#----------------------------------- #
+
+  ### Survival data ####
 d_surv <- d %>% mutate(PhotoTreat=gsub("(\\w+)Day.+","\\1",Treatment), MismTreat=gsub("\\w+(Day.+)","\\1",Treatment)) %>% 
   select(MotherID, Treatment, PhotoTreat, MismTreat, CaterpillarID, DeadAprilDay, PupationAprilDay) %>%
   pivot_longer(cols=c(DeadAprilDay, PupationAprilDay), names_to="Info", values_to="TimeOfEvent") %>%
   filter(!is.na(TimeOfEvent)) %>%
-  mutate(Event=ifelse(Info=="DeadAprilDay", 1, 0), Treatment=as.factor(Treatment), PhotoTreat=as.factor(ifelse(PhotoTreat=="Chang", "Changing", "Constant")), MismTreatf=as.factor(MismTreat), MotherID=as.factor(MotherID)) %>%
+  mutate(Event=ifelse(Info=="DeadAprilDay", 1, 0), Treatment=as.factor(Treatment), PhotoTreat=as.factor(ifelse(PhotoTreat=="Chang", "Changing", "Constant")), 
+         MismTreatf=as.factor(MismTreat), MotherID=as.factor(MotherID)) %>%
   mutate(Treatment=factor(Treatment, levels=c("ChangDay-4", "ChangDay-3", "ChangDay-2", "ChangDay-1", "ChangDay0", "ChangDay+1", "ChangDay+2", "ChangDay+3", "ChangDay+4",
                                               "ChangDay+5",  "ConstDay-4", "ConstDay-2", "ConstDay0", "ConstDay+2", "ConstDay+4")), 
     MismTreatf=factor(MismTreat, levels=c("Day-4", "Day-3", "Day-2", "Day-1", "Day0", "Day+1", "Day+2", "Day+3", "Day+4", "Day+5")),
     MismTreat=as.numeric(gsub("Day(.+)","\\1",MismTreat))) %>%
   mutate(MismTreat1=MismTreat+5, # no negatives to be able to fit squared term
          MismTreat2=(MismTreat+5)^2) # squared term to add in model
+
+  # To save d_surv after checking that it is OK (save_tables should be set to TRUE)
+if(save_ref_outputs) write_rds(d_surv, "_results/ref/d_surv_expected.rds")
+  # To check reproducibility with checked file
+checkReproducibilityOutput(d_surv, "_results/ref/d_surv_expected.rds")
+  # To read reference file for visual checking
+if(read_ref_outputs)
+  readReferenceFile("d_surv")
+
 # Vidisha coded it as TimeOfEvent=DeadAprilDay or PupationAprilDay, with event=Died or Survived
 head(d_surv)
 str(d_surv)
 table(d_surv$MismTreat2)
 
-length(unique(d_surv$CaterpillarID)) # should be 976
+  # Automatic reproducibility check
+nb_caterpillars <- length(unique(d_surv$CaterpillarID)) # should be 976
+print(nb_caterpillars)
+checkReproducibilityValues(nb_caterpillars, 976) 
 
-
-#-----------------------------------
-# Survival analysis ####
-#-----------------------------------
 levels(d_surv$Treatment)
 levels(d_surv$PhotoTreat)
-levels(d_surv$MismTreatf) # as factor or not? Marcel thinks not ####
+levels(d_surv$MismTreatf) # as factor or not? Marcel thinks not
 levels(d_surv$MotherID)
 table(d_surv$TimeOfEvent)
 table(d_surv$Event) # this variable corresponds to "survival" as defined in the paper (e.g., the response variable in the first binomial mixed-effect model)
 
-# Visualize survival probabilities ####
+### Visualize survival probabilities ####
 head(d_surv)
 
 surv_probs <- aggregate(Event~MismTreat + PhotoTreat + MotherID, d_surv, sum) # per mother
@@ -113,6 +192,13 @@ head(surv_probs)
 surv_avg <- Rmisc::summarySE(surv_probs, measurevar="probs", groupvars=c("MismTreat")) # average of two photoperiod treatments
 surv_avg$samplesize <- aggregate(Info~MismTreat, d_surv, length)$Info
 surv_avg
+
+  # To save surv_avg after checking that it is OK (save_ref_outputs should be set to TRUE)
+if(save_ref_outputs) write_rds(surv_avg, "_results/ref/surv_avg_expected.rds")
+  # To check reproducibility with checked file
+checkReproducibilityOutput(surv_avg, "_results/ref/surv_avg_expected.rds")
+  # To read reference file for visual checking
+if(read_ref_outputs) readReferenceFile("surv_avg")
 
 raw_surv <- ggplot(data=surv_avg, aes(x=MismTreat, y=probs))+
   scale_colour_manual(values=c("grey27", "orangered2"))+ #"dodgerblue4"
@@ -125,31 +211,66 @@ raw_surv <- ggplot(data=surv_avg, aes(x=MismTreat, y=probs))+
   theme(axis.title.y=element_text(size=18, vjust=2), axis.title.x=element_text(size=18, vjust=-0.5),
         axis.text=element_text(size=16), legend.text = element_text(size=16), legend.title=element_text(size=17))
 raw_surv 
-# ggsave(filename="_results/Survival_raw.png", plot=raw_surv , device="png", width=200, height=150, units="mm", dpi="print")
 
+  # To save the figure
+if(save_figures)
+  ggsave(filename="_results/Survival_raw.png", plot=raw_surv , device="png", width=200, height=150, units="mm", dpi="print")
 
-# Fit binomial model ####
-#-----------------------------------
+  # To save it as the reference file for reproducibility tests
+if(save_ref_outputs)
+  write_rds(raw_surv, "_results/ref/raw_surv_expected.rds")
+  
+  # To check correspondence with saved figure (reference)
+checkReproducibilityOutput(obtained = raw_surv, 
+                           ref_path = "_results/ref/raw_surv_expected.rds", # the expected figure saved as a .RDS
+                           ref_vis = "_results/Survival_raw.png", # the expected figure saved as a .PNG
+                           print = F)
+
+# To read reference file for visual checking
+if(read_ref_outputs) readReferenceFile("raw_surv")
+
+### Fit binomial model ####
+#-----------------------------------  #
 head(d_surv) # test if probability of survival differs between treatments
 
 glm1 <- glmer(Event ~ (MismTreat1 + MismTreat2)*PhotoTreat + (1|MotherID), family=binomial, data=d_surv,
               na.action="na.fail", control=glmerControl(calc.derivs=F)) # helps convergence
-anova1 <- drop1(glm1,test="Chi") %>% as.data.frame # interaction not significant; the use of Chi-square test to determine statistical significance should be explicitly mention in the paper
+anova1 <- drop1(glm1,test="Chi") %>% as.data.frame 
+  # interaction not significant; the use of Chi-square test to determine statistical significance should be explicitly mention in the paper
 anova1$mod <- "glm1"
 
 glm2 <- update(glm1, ~ . -MismTreat1:PhotoTreat - MismTreat2:PhotoTreat) # simplify model
 anova2 <- drop1(glm2,test="Chi") %>% as.data.frame #no effect of PhotoTreatment, but effect of MismTreat and MismTreat^2
 anova2$mod <- "glm2"
 
-# Final model ####
+### Final model ####
 glm_final <- glm2
 summary(glm_final)# Estimates are log odds
 glm_res <- summary(glm_final)$coefficients %>% as.data.frame
 
-# write.csv(glm_res, file="_results/output_Surv_glmer.csv", row.names=T)
-# write.csv(rbind(anova1, anova2), file="_results/anova_Surv_glmer.csv", row.names=T)
+  # To save model outputs
+if(save_tables) {
+  write.csv(glm_res, file="_results/output_Surv_glmer.csv", row.names=T)
+  write.csv(rbind(anova1, anova2), file="_results/anova_Surv_glmer.csv", row.names=T)
+}
+  
+  # To save them as new references
+if(save_ref_outputs) {
+  write_rds(glm_res, file = "_results/ref/glm_surv_res_expected.rds")
+  write_rds(rbind(anova1, anova2), file = "_results/ref/glm_surv_anova_expected.rds")
+}
+  
+  # To check that model outputs match reference files
+checkReproducibilityOutput(glm_res, "_results/ref/glm_surv_res_expected.rds")
+checkReproducibilityOutput(rbind(anova1, anova2), "_results/ref/glm_surv_anova_expected.rds")
 
-# Get predictions ####
+  # To read reference files for visual comparison
+if(read_ref_outputs) {
+  readReferenceFile("glm_surv_res")
+  readReferenceFile("glm_surv_anova")
+}
+
+### Get predictions ####
 glm.pred <- d_surv[!duplicated(d_surv[,c("MotherID", "Treatment")]),] # each replicate assigned same prediction, so remove duplicates
 glm.pred$pred <- predict(glm_final, newdata=glm.pred, type="response") # predictions are probability of dying now
 glm.pred$survprob <- (1-glm.pred$pred)
@@ -157,7 +278,7 @@ aggregate(survprob~MismTreat, data=glm.pred, mean) # peak at Day2
 glm.pred$rel <- glm.pred$survprob/mean(filter(glm.pred, MismTreat==1)$survprob) # expressive relative to peak
 head(glm.pred)
 
-# Visualize predictions ####
+### Visualize predictions ####
 pred <- Rmisc::summarySE(glm.pred, measurevar="survprob", groupvars=c("MismTreat")) # average of two photoperiod treatments
 pred$samplesize <- aggregate(CaterpillarID~MismTreat, data=d_surv, length)$CaterpillarID
 
@@ -165,14 +286,30 @@ pred$samplesize <- aggregate(CaterpillarID~MismTreat, data=d_surv, length)$Cater
 p_surv <- raw_surv + #geom_line(data=pred, aes(y=survprob*100)) +
   geom_smooth(data=pred, aes(y=survprob*100), se=F, col="red3")
 p_surv
-# ggsave(filename="_results/Survival_wpred_rev.png", plot=p_surv, device="png", width=200, height=150, units="mm", dpi="print")
+
+  # To save the figure
+if(save_figures)
+  ggsave(filename="_results/Survival_wpred_rev.png", plot=p_surv, device="png", width=200, height=150, units="mm", dpi="print")
+
+  # To save it as the reference file for reproducibility tests
+if(save_ref_outputs)
+  write_rds(p_surv, "_results/ref/p_surv_expected.rds")
+
+  # To check correspondence with saved figure (reference)
+checkReproducibilityOutput(obtained = p_surv, 
+                           ref_path = "_results/ref/p_surv_expected.rds", # the expected figure saved as a .RDS
+                           ref_vis = "_resultsSurvival_wpred_rev.png", # the expected figure saved as a .PNG
+                           print = F)
+
+# To read the reference file for visual comparison
+if(read_ref_outputs) readReferenceFile("p_surv")
 
 rm(anova1, anova2, glm_res, glm1, glm2, pred, surv_probs, surv_avg, raw_surv) #cleanup
 
 
-#-----------------------------------
-# Pupation weight analysis ####
-#-----------------------------------
+#-----------------------------------  #
+## Pupation weight analysis ####
+#-----------------------------------  #
 head(d)
 
 d_pupa <- d %>% mutate(PhotoTreat=gsub("(\\w+)Day.+","\\1",Treatment), MismTreat=gsub("\\w+(Day.+)","\\1",Treatment), PupaWeight=PupaWeight_ingrams*1000) %>%
@@ -185,14 +322,28 @@ d_pupa <- d %>% mutate(PhotoTreat=gsub("(\\w+)Day.+","\\1",Treatment), MismTreat
          MismTreat=as.numeric(gsub("Day(.+)","\\1",MismTreat))) %>%
   mutate(MismTreat1=MismTreat+5, # no negatives
          MismTreat2=(MismTreat+5)^2) # squared term to add in model
-head(d_pupa) # 346 individuals survived until pupation
-nrow(d_pupa)/nrow(d)*100 # ~35%
+
+head(d_pupa) 
+n_survived <- nrow(d_pupa)
+print(n_survived) # 346 individuals survived until pupation
+checkReproducibilityValues(n_survived, 346) # automatic reproducibility checking
+percent_survived <- n_survived/nrow(d)*100 
+print(percent_survived) # ~35%
+checkReproducibilityValues(percent_survived, 35.45082) # automatic reproducibility checking
 
 
-# Visualize ####
+### Visualize ####
 weight <- Rmisc::summarySE(d_pupa, measurevar="PupaWeight", groupvars=c("MismTreat", "PhotoTreat"))
 weight$pos <- ifelse(is.na(weight$se)==T, 0, weight$se) # position of sample size labels
 weight
+
+  # Saving reference weight file
+if(save_ref_outputs) write_rds(weight, "_results/ref/weight_expected.rds")
+  # Reproducibility checking
+checkReproducibilityOutput(weight, "_results/ref/weight_expected.rds")
+  # To read the reference file for visual comparison
+if(read_ref_outputs) readReferenceFile("weight")
+
 
 raw_weight <- ggplot(data=weight, aes(x=MismTreat, y=PupaWeight, col=PhotoTreat, fill=PhotoTreat))+
   scale_colour_manual(values=c("grey27", "orangered2"))+ #"dodgerblue4"
@@ -208,11 +359,26 @@ raw_weight <- ggplot(data=weight, aes(x=MismTreat, y=PupaWeight, col=PhotoTreat,
   theme(axis.title.y=element_text(size=18, vjust=2), axis.title.x=element_text(size=18, vjust=-0.5),
         axis.text=element_text(size=16), legend.text = element_text(size=16), legend.title=element_text(size=17))
 raw_weight  
-# ggsave(filename="_results/PupWeight_raw.png", plot=raw_weight , device="png", width=200, height=150, units="mm", dpi="print")
 
+  # To save the figure
+if(save_figures)
+  ggsave(filename="_results/PupWeight_raw.png", plot=raw_weight , device="png", width=200, height=150, units="mm", dpi="print")
+  
+  # To save it as the reference file for reproducibility tests
+if(save_ref_outputs)
+  write_rds(raw_weight, "_results/ref/raw_weight_expected.rds")
 
-# Fit linear mixed model ####
-#-----------------------------------
+  # To check correspondence with saved figure (reference)
+checkReproducibilityOutput(obtained = raw_weight, 
+                           ref_path = "_results/ref/raw_weight_expected.rds", # the expected figure saved as a .RDS
+                           ref_vis = "_results/PupWeight_raw.png", # the expected figure saved as a .PNG
+                           print = F)
+
+  # To read the reference file for visual comparison
+if(read_ref_outputs) readReferenceFile("raw_weight")
+
+### Fit linear mixed model ####
+#-----------------------------------  #
 lm1 <- lmer(PupaWeight ~ (MismTreat1 + MismTreat2)*PhotoTreat + (1|MotherID), data=d_pupa)
 anova1 <- anova(lm1) %>% as.data.frame() # interaction not significant
 anova1$mod <- "lm1"
@@ -230,7 +396,7 @@ lm4 <- lmer(PupaWeight ~ -1 + MismTreat1 + PhotoTreat + (1|MotherID), data=filte
 anova(lm4) # yes
 
 
-# Final model ####
+### Final model ####
 lm_final <- lm3
 summary(lm_final)
 lm_res <- summary(lm_final)$coefficients %>% as.data.frame
@@ -239,38 +405,123 @@ plot(lm_final) #equal variance? ok
 qqnorm(resid(lm_final)) #normally distributed? ok
 qqline(resid(lm_final))
 
-# write.csv(lm_res, file="_results/output_PupaWeight_lmer.csv", row.names=T)
-# write.csv(rbind(anova1, anova2, anova3), file="_results/anova_PupaWeight_lmer.csv", row.names=T)
 
-# Get predictions ####
+# To save model outputs
+if(save_tables) {
+  write.csv(lm_res, file="_results/output_PupaWeight_lmer.csv", row.names=T)
+  write.csv(rbind(anova1, anova2, anova3), file="_results/anova_PupaWeight_lmer.csv", row.names=T)
+}
+
+# To save them as new references
+if(save_ref_outputs) {
+  write_rds(lm_res, file = "_results/ref/lm_weight_res_expected.rds")
+  write_rds(rbind(anova1, anova2, anova3), file = "_results/ref/lm_weight_anova_expected.rds")
+}
+
+# To check that model outputs match reference files
+checkReproducibilityOutput(lm_res, "_results/ref/lm_weight_res_expected.rds")
+checkReproducibilityOutput(rbind(anova1, anova2, anova3), "_results/ref/lm_weight_anova_expected.rds")
+
+# To read reference files for visual comparison
+if(read_ref_outputs) {
+  readReferenceFile("lm_weight_res")
+  readReferenceFile("lm_weight_anova")
+}
+
+### Get predictions ####
 lm.pred <- d_pupa[!duplicated(d_pupa[,c("MotherID", "Treatment")]),] # each replicate assigned same prediction, so remove duplicates
 lm.pred$pred <- predict(lm_final, newdata=lm.pred, type="response")
 head(lm.pred)
 
-# Visualize predictions ####
+### Visualize predictions ####
 pred1 <- Rmisc::summarySE(lm.pred, measurevar="pred", groupvars=c("MismTreat", "PhotoTreat")) # significant effect of photoperiod, so show separate means
 pred1$samplesize <- weight$N
 pred1$pos <- ifelse(is.na(pred1$se)==T, 0, pred1$se) # position of sample size labels
 
-# add predictions to raw data figure
+## add predictions to raw data figure
 p_weight <- raw_weight + #geom_line(data=pred1, aes(y=pred)) +
   geom_smooth(data=pred1, aes(y=pred, col=PhotoTreat), se=F, method=lm)+
   geom_text(data=filter(weight, PhotoTreat=="Changing"),aes(label=N, y=PupaWeight-pos-1.5), col="black", size=4, fontface="bold")+
   geom_text(data=filter(weight, PhotoTreat=="Constant"),aes(label=N, y=PupaWeight+pos+2.3), col="black", size=4, fontface="bold")
 p_weight
-# ggsave(filename="_results/PupWeight_wpred_rev.png", plot=p_weight, device="png", width=200, height=150, units="mm", dpi="print")
+
+# To save the figure
+if(save_figures)
+  ggsave(filename="_results/PupWeight_wpred_rev.png", plot=p_weight, device="png", width=200, height=150, units="mm", dpi="print")
+  
+# To save it as the reference file for reproducibility tests
+if(save_ref_outputs)
+  write_rds(p_weight, "_results/ref/p_weight_expected.rds")
+
+# To check correspondence with saved figure (reference)
+checkReproducibilityOutput(obtained = p_weight, 
+                           ref_path = "_results/ref/p_weight_expected.rds", # the expected figure saved as a .RDS
+                           ref_vis = "_results/PupWeight_wpred_rev.png", # the expected figure saved as a .PNG
+                           print = F)
+
+# To read the reference file for visual comparison
+if(read_ref_outputs) readReferenceFile("p_weight")
 
 
+#--------------------------------------------  #
+## Making figure 2 ####
+#--------------------------------------------  #
 
-#--------------------------------------------
-# Get fitness curve ####
-#--------------------------------------------
+# Making figure 2 entirely code-based
+# common_legend in ggarrange() does not work properly here
+  # (to get legend on the right)
+# so we use a trick by combining ggpubr and cowplot
+# we extract the legend, which is considered as a different figure
+# then we arrange figure position with cowplot::plot_grid()
+fig2_layout <- 
+  ggpubr::ggarrange(p_surv + theme(legend.position = "none"),
+                    p_weight + theme(legend.position = "none"), 
+                    nrow = 1,
+                    labels = c("(a)", "(b)"),
+                    font.label = list(face = "italic")) 
 
-# Don't care about PhotoTreat effect, drop from models ####
+fig2 <- 
+  cowplot::plot_grid(fig2_layout, 
+                     # extracting legend here
+                     ggpubr::get_legend(p_weight), 
+                     # to arrange positions
+                     rel_widths = c(0.6, 0.1)) +
+  bgcolor('white')
+
+fig2
+
+  # sate save_figures to TRUE to save the figure again
+if(save_figures) 
+  ggplot2::ggsave(filename = "_results/figure_2.png",
+                  fig2, 
+                  device = "png", 
+                  width = 400, 
+                  height = 150, 
+                  units = "mm", 
+                  dpi = "print")
+
+  # sate save_ref_outputs to TRUE to save it as a reference file
+  # for reproducibility checking
+if(save_ref_outputs)
+  write_rds(fig2, file = "_results/ref/fig2_expected.rds")
+
+# Checking reproducibility
+  # !! CheckReproducibilityOuput() function does not work for complex figures generated with ggpubr/cowplot
+  # Please visually refer to the reference figure for checking that it matches the output
+message('fig2 should match the file saved as _results/ref/fig_2_expected.rds')
+message('Set read_ref_outputs to TRUE and run the following line to plot the reference file:')
+if(read_ref_outputs)
+  readReferenceFile("fig2")
+
+#--------------------------------------------  #
+## Get fitness curve ####
+#--------------------------------------------  #
+
+# Don't care about PhotoTreat effect, drop from models
 glm_fit <- glmer(Event ~ MismTreat1 + MismTreat2 + (1 | MotherID), family="binomial", data=d_surv)
 lm_fit <- lmer(PupaWeight ~ MismTreat1 + (1 | MotherID), data=d_pupa)
 
-# Get predictions to use for curve ####
+### Get predictions to use for curve ####
 glm.fit <- d_surv[!duplicated(d_surv[,c("MotherID", "MismTreatf")]),] # each replicate assigned same prediction, so remove duplicates
 glm.fit$pred <- predict(glm_fit, newdata=glm.fit, type="response") # predictions are probability of dying now
 glm.fit$survpred <- (1-glm.fit$pred)
@@ -282,8 +533,8 @@ head(glm.fit) # pred = probability of dying, survpred=1-pred, 220 observations =
 head(lm.fit) # pred=predicted weight from lmer, only 154 observations
 
 
-# Fit curve to absolute fitness ####
-#-----------------------------------
+### Fit curve to absolute fitness ####
+#-----------------------------------  #
 RelFit <- merge(glm.fit[,c("MotherID", "MismTreat", "survpred")], lm.fit[,c("MotherID", "MismTreat", "pred")], by=c("MotherID", "MismTreat"), all=T)
 colnames(RelFit)[c(3,4)] <- c("survpred", "pupwpred")
 RelFit$Fit <- RelFit$survpred*RelFit$pupwpred # multiply absolute values
@@ -291,7 +542,7 @@ head(RelFit) # can only do for 154 observations, clutches with >=1 caterpillar s
 table(RelFit$MismTreat, is.na(RelFit$Fit)) # for the other clutches, fitness = 0
 RelFit$Fit2 <- ifelse(is.na(RelFit$Fit)==T, 0, RelFit$Fit)
 
-# loess model to describe the curve ####
+### loess model to describe the curve ####
 loess_mod <- loess(Fit2~ -1 + MismTreat,  data=RelFit) 
 summary(loess_mod)
 
@@ -308,8 +559,17 @@ RelFit_means <- Rmisc::summarySE(RelFit, measurevar="rel", groupvars=c("MismTrea
 RelFit_means$samplesize <- aggregate(MotherID~MismTreat, data=d_surv, length)$MotherID # number of caterpillars curve is based on = all
 RelFit_means$curve <- curve$rel
 head(RelFit_means)
-# write.csv(RelFit_means, file="_results/RelFitness_rev.csv", row.names=F)
 
+  # To save RelFit_means
+if(save_tables) write.csv(RelFit_means, file="_results/RelFitness_rev.csv", row.names=F)
+  # To save it as a new reference
+if(save_ref_outputs) write_rds(RelFit_means, file = "_results/ref/RelFit_means_expected.rds")
+  # To check that the table matches the reference file
+checkReproducibilityOutput(RelFit_means, "_results/ref/RelFit_means_expected.rds")
+  # To read the reference file for visual comparison
+if(read_ref_outputs) readReferenceFile("RelFit_means")
+
+### Visualize predictions ####
 p_relfit <- ggplot(data=RelFit, aes(x=MismTreat, y=rel)) +
   geom_jitter(size=3, alpha=0.4, height=0, width=0.25, shape=21, fill="dodgerblue2", col="dodgerblue4")+
   geom_point(data=RelFit_means, size=5) +
@@ -324,9 +584,92 @@ p_relfit <- ggplot(data=RelFit, aes(x=MismTreat, y=rel)) +
   theme(axis.title.y=element_text(size=18, vjust=2), axis.title.x=element_text(size=18, vjust=-0.5),
         axis.text=element_text(size=16), legend.text = element_text(size=16), legend.title=element_text(size=17))
 p_relfit
-# ggsave(filename="_results/FitnessCurve_rev.png", plot=p_relfit, device="png", width=200, height=150, units="mm", dpi="print")
+
+# To save the figure
+if(save_figures)
+  ggsave(filename="_results/FitnessCurve_rev.png", plot=p_relfit, device="png", width=200, height=150, units="mm", dpi="print")
+  
+# To save it as the reference file for reproducibility tests
+if(save_ref_outputs)
+  write_rds(p_relfit, "_results/ref/p_relfit_expected.rds")
+
+# To check correspondence with saved figure (reference)
+checkReproducibilityOutput(obtained = p_relfit, 
+                           ref_path = "_results/ref/p_relfit_expected.rds", # the expected figure saved as a .RDS
+                           ref_vis = "_results/FitnessCurve_rev.png", # the expected figure saved as a .PNG
+                           print = F)
+
+# To read the reference file for visual comparison
+if(read_ref_outputs) readReferenceFile("p_relfit")
 
 
+### Average fitness loss per day ####
+#----------------------------------  #
 
+  # 1. Hatching earlier than budburst date
+fitness_loss_hatchedEarlier <- 
+RelFit_means %>%
+  dplyr::select(MismTreat, curve) %>%
+  dplyr::filter(MismTreat <= 2) %>%
+  dplyr::rename("pred_fitness" = "curve") %>%
+  # What would have been the mean fitness if hatched one day later?
+  mutate(lagged_fitness = lead(pred_fitness)) %>%
+  mutate(fitness_loss = lagged_fitness - pred_fitness)
 
-sessionInfo() %>% capture.output(file="_src/env_CatFoodExp2021_analysis.txt")
+fitness_loss_hatchedEarlier %>% print
+  # Mean value ? Should be 14%
+fitness_loss_earlier <- na.omit(fitness_loss_hatchedEarlier$fitness_loss)
+mean_fitness_loss_earlier <- exp(mean(log(fitness_loss_earlier))) %>% round(2)
+checkReproducibilityValues(mean_fitness_loss_earlier, 0.14)
+  # Max value ? Should be 32%
+fitness_loss_hatchedEarlier %>% dplyr::slice(which.max(fitness_loss)) # corresponds to day -1
+max_fitness_loss_earlier <- fitness_loss_hatchedEarlier$fitness_loss %>% max(na.rm = T) %>% round(2)
+checkReproducibilityValues(max_fitness_loss_earlier, 0.32)
+
+  # 2. Hatching later than budburst date
+fitness_loss_hatchedLater <- 
+RelFit_means %>%
+  dplyr::select(MismTreat, curve) %>%
+  dplyr::filter(MismTreat >= 2) %>%
+  dplyr::rename("pred_fitness" = "curve") %>%
+  # What would have been the mean fitness if hatched one day later?
+  mutate(lagged_fitness = lag(pred_fitness)) %>%
+  mutate(fitness_loss = lagged_fitness - pred_fitness)
+
+fitness_loss_hatchedLater %>% print
+  # Mean value ? Should be 13% (although reported as 6% in paper)
+fitness_loss_Later <- na.omit(fitness_loss_hatchedLater$fitness_loss)
+mean_fitness_loss_Later <- exp(mean(log(fitness_loss_Later))) %>% round(2)
+checkReproducibilityValues(mean_fitness_loss_Later, 0.13)
+  # Max value ? Should be 32%
+fitness_loss_hatchedLater %>% dplyr::slice(which.max(fitness_loss)) # corresponds to day -1
+max_fitness_loss_Later <- fitness_loss_hatchedLater$fitness_loss %>% max(na.rm = T) %>% round(2)
+checkReproducibilityValues(max_fitness_loss_Later, 0.24)
+
+  # To save output tables
+if(save_tables) {
+  write.csv(fitness_loss_hatchedEarlier, file="_results/fitness_loss_hatchedEarlier.csv")
+  write.csv(fitness_loss_hatchedLater, file="_results/fitness_loss_hatchedEarlier.csv")
+}
+  # To save them as new references
+if(save_ref_outputs) {
+  write_rds(fitness_loss_hatchedEarlier, file = "_results/ref/fitness_loss_hatchedEarlier_expected.rds")
+  write_rds(fitness_loss_hatchedLater, file = "_results/ref/fitness_loss_hatchedLater_expected.rds")
+}
+  # To check that tables match the reference files
+checkReproducibilityOutput(fitness_loss_hatchedEarlier, "_results/ref/fitness_loss_hatchedEarlier_expected.rds")
+checkReproducibilityOutput(fitness_loss_hatchedLater, "_results/ref/fitness_loss_hatchedLater_expected.rds")
+
+  # To read reference files for visual comparison
+if(read_ref_outputs) {
+  readReferenceFile("fitness_loss_hatchedEarlier")
+  readReferenceFile("fitness_loss_hatchedLater")
+}
+
+#--------------------------------------------  #
+## Session info ####
+#--------------------------------------------  #
+
+if(save_session_info) 
+  sessionInfo() %>% 
+  capture.output(file="_src/env_CatFoodExp2021_analysis.txt")
