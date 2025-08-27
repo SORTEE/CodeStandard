@@ -59,16 +59,16 @@ table(d[!duplicated(d$MotherID), "AreaShortName"])
 # Survival data ####
 d_surv <- d %>% mutate(PhotoTreat=gsub("(\\w+)Day.+","\\1",Treatment), MismTreat=gsub("\\w+(Day.+)","\\1",Treatment)) %>% 
   select(MotherID, Treatment, PhotoTreat, MismTreat, CaterpillarID, DeadAprilDay, PupationAprilDay) %>%
-  pivot_longer(cols=c(DeadAprilDay, PupationAprilDay), names_to="Info", values_to="TimeOfEvent") %>%
-  filter(!is.na(TimeOfEvent)) %>%
-  mutate(Event=ifelse(Info=="DeadAprilDay", 1, 0), Treatment=as.factor(Treatment), PhotoTreat=as.factor(ifelse(PhotoTreat=="Chang", "Changing", "Constant")), MismTreatf=as.factor(MismTreat), MotherID=as.factor(MotherID)) %>%
+  pivot_longer(cols=c(DeadAprilDay, PupationAprilDay), names_to="Info", values_to="TimeOfDeath") %>%
+  filter(!is.na(TimeOfDeath)) %>%
+  mutate(survival=ifelse(Info=="DeadAprilDay", 1, 0), Treatment=as.factor(Treatment), PhotoTreat=as.factor(ifelse(PhotoTreat=="Chang", "Changing", "Constant")), MismTreatf=as.factor(MismTreat), MotherID=as.factor(MotherID)) %>%
   mutate(Treatment=factor(Treatment, levels=c("ChangDay-4", "ChangDay-3", "ChangDay-2", "ChangDay-1", "ChangDay0", "ChangDay+1", "ChangDay+2", "ChangDay+3", "ChangDay+4",
                                               "ChangDay+5",  "ConstDay-4", "ConstDay-2", "ConstDay0", "ConstDay+2", "ConstDay+4")), 
-    MismTreatf=factor(MismTreat, levels=c("Day-4", "Day-3", "Day-2", "Day-1", "Day0", "Day+1", "Day+2", "Day+3", "Day+4", "Day+5")),
-    MismTreat=as.numeric(gsub("Day(.+)","\\1",MismTreat))) %>%
+         MismTreatf=factor(MismTreat, levels=c("Day-4", "Day-3", "Day-2", "Day-1", "Day0", "Day+1", "Day+2", "Day+3", "Day+4", "Day+5")),
+         MismTreat=as.numeric(gsub("Day(.+)","\\1",MismTreat))) %>%
   mutate(MismTreat1=MismTreat+5, # no negatives to be able to fit squared term
          MismTreat2=(MismTreat+5)^2) # squared term to add in model
-# Vidisha coded it as TimeOfEvent=DeadAprilDay or PupationAprilDay, with event=Died or Survived
+# TimeOfEvent=DeadAprilDay or PupationAprilDay, with event=Died or Survived
 
 head(d_surv)
 str(d_surv)
