@@ -10,18 +10,17 @@
 
 
 # Open R project in main folder
-
-# Restore library
+# Restore library 
 renv::restore()
 
-# Load packages
+# Load packages ####
 #-----------------------------------
-library(tidyverse)
-library(cowplot)
-theme_set(theme_cowplot()) #white background instead of grey -> don't load if want grey grid
-library(lme4)
-library(lmerTest)
-library(Rmisc)
+library(tidyverse)         # Used for data cleaning and manipulation.
+library(cowplot)           # Used for creating and arranging plots, providing a clean theme for publication
+theme_set(theme_cowplot()) # Use white background instead of grey
+library(lme4)              # Used for fitting linear and generalized linear mixed-effects models (LMMs and GLMMs)
+library(lmerTest)          # Provides p-values for LMMs and GLMMs using Satterthwaite's approximation
+library(Rmisc)             # Used for calculating standard error and confidence intervals for data summaries
 
 
 # Load data ####
@@ -57,6 +56,8 @@ table(d[!duplicated(d$MotherID), "AreaShortName"])
 # RQ1: What are the fitness consequences of day to day timing (a)synchrony with budburst? ####
 
 # Survival data ####
+
+# The following section reshapes and cleans the data to prepare it for survival analysis
 d_surv <- d %>% mutate(PhotoTreat=gsub("(\\w+)Day.+","\\1",Treatment), MismTreat=gsub("\\w+(Day.+)","\\1",Treatment)) %>% 
   select(MotherID, Treatment, PhotoTreat, MismTreat, CaterpillarID, DeadAprilDay, PupationAprilDay) %>%
   pivot_longer(cols=c(DeadAprilDay, PupationAprilDay), names_to="Info", values_to="TimeOfDeath") %>%
@@ -122,6 +123,8 @@ glm1 <- glmer(Event ~ (MismTreat1 + MismTreat2)*PhotoTreat + (1|MotherID), famil
 anova1 <- drop1(glm1,test="Chi") %>% as.data.frame # interaction not significant; the use of Chi-square test to determine statistical significance should be explicitly mention in the paper
 anova1$mod <- "glm1"
 
+# The interaction terms are removed here because their p-values were not significant in the `glm1` model
+
 glm2 <- update(glm1, ~ . -MismTreat1:PhotoTreat - MismTreat2:PhotoTreat) # simplify model
 anova2 <- drop1(glm2,test="Chi") %>% as.data.frame #no effect of PhotoTreatment, but effect of MismTreat and MismTreat^2
 anova2$mod <- "glm2"
@@ -160,6 +163,8 @@ rm(anova1, anova2, glm_res, glm1, glm2, pred, surv_probs, surv_avg, raw_surv) #c
 #-----------------------------------
 head(d)
 
+# This section prepares the data for pupation weight analysis by creating new variables for photoperiod and mismatch treatment,
+# and converting pupation weight from grams to milligrams for better readability
 d_pupa <- d %>% mutate(PhotoTreat=gsub("(\\w+)Day.+","\\1",Treatment), MismTreat=gsub("\\w+(Day.+)","\\1",Treatment), PupaWeight=PupaWeight_ingrams*1000) %>%
   select(ExperimentName, MotherID, Treatment, PhotoTreat, MismTreat, CaterpillarID, PupationAprilDay, PupaWeight) %>%
   filter(!is.na(PupationAprilDay)) %>%
@@ -198,24 +203,30 @@ raw_weight
 
 # Fit linear mixed model ####
 #-----------------------------------
+
 lm1 <- lmer(PupaWeight ~ (MismTreat1 + MismTreat2)*PhotoTreat + (1|MotherID), data=d_pupa)
 anova1 <- anova(lm1) %>% as.data.frame() # interaction not significant
 anova1$mod <- "lm1"
 
+# The interaction terms are removed here because they were not significant in the `lm1` model
 lm2 <- update(lm1, ~ . - MismTreat1:PhotoTreat - MismTreat2:PhotoTreat) # simplify model
 anova2 <- anova(lm2) %>% as.data.frame() # Squared mismatch not significant
 anova2$mod <- "lm2"
 
+# The squared mismatch term (`MismTreat2`) is removed here because it was not significant in the `lm2` model
 lm3 <- update(lm2, ~ . - MismTreat2) # simplify model
 anova3 <- anova(lm3) %>% as.data.frame() # PhotoTreat and MismTreat significant
 anova3$mod <- "lm3"
 
-# Still there if exclude first time point with low sample size?
+# lm4 is a check to see if the model's results change when the `MismTreat == -4` data point is removed,
+# as it has a very low sample size. The results are still significant, indicating the findings are robust
 lm4 <- lmer(PupaWeight ~ -1 + MismTreat1 + PhotoTreat + (1|MotherID), data=filter(d_pupa, MismTreat!=-4))
 anova(lm4) # yes
 
 
 # Final model ####
+
+# The final model used for the paper is `lm3`, as it includes all available data
 lm_final <- lm3
 summary(lm_final)
 lm_res <- summary(lm_final)$coefficients %>% as.data.frame
@@ -251,7 +262,8 @@ p_weight
 # Get fitness curve ####
 #--------------------------------------------
 
-# Don't care about PhotoTreat effect, drop from models ####
+# The following models are simplified by excluding the photoperiod treatment effect
+# This is because the final fitness curve (Figure 4 in the paper) is an overall representation of fitness across all conditions
 glm_fit <- glmer(Event ~ MismTreat1 + MismTreat2 + (1 | MotherID), family="binomial", data=d_surv)
 lm_fit <- lmer(PupaWeight ~ MismTreat1 + (1 | MotherID), data=d_pupa)
 
@@ -310,8 +322,6 @@ p_relfit <- ggplot(data=RelFit, aes(x=MismTreat, y=rel)) +
         axis.text=element_text(size=16), legend.text = element_text(size=16), legend.title=element_text(size=17))
 p_relfit
 # ggsave(filename="_results/FitnessCurve_rev.png", plot=p_relfit, device="png", width=200, height=150, units="mm", dpi="print")
-
-
 
 
 sessionInfo() %>% capture.output(file="_src/env_CatFoodExp2021_analysis.txt")
