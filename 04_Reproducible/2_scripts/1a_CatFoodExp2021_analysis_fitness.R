@@ -9,11 +9,12 @@
 # !!!! Important !!!!
 # In order for the script to work properly, please open R project in main folder
 
+#----------------------------------  #
 # Initiation ####
 #----------------------------------- #
 
 # Clear environment
-rm(list=ls())
+rm(list = ls())
 
 # Restore library
 renv::restore()
@@ -21,7 +22,7 @@ renv::restore()
 # If error when downloading digest :
   # (this happens, check https://stackoverflow.com/questions/48548767/can-not-download-digest-package-in-r)
 if(!require(digest))
-  install.packages('digest', repos='http://cran.us.r-project.org')
+  install.packages('digest', repos = 'http://cran.us.r-project.org')
 
 # We will use this additional package so if not installed:
 if(!require(ggpubr)) 
@@ -34,6 +35,7 @@ if(!require(rdryad))
 # Setting seed for random processes
 set.seed(147)
 
+#----------------------------------  #
 # Load packages ####
 #----------------------------------- #
 
@@ -46,6 +48,7 @@ library(Rmisc)
 library(rdryad) # To download automatically from Dryad
 library(ggpubr) # To arrange multiple figures
 
+#----------------------------------  #
 # Load functions ####
 #----------------------------------- #
 
@@ -53,6 +56,7 @@ pathF <- c("2_scripts/Functions/") # They are stored here
 functions <- list.files(pathF)
 sapply(functions, function(file) source(paste0(pathF, file))) %>% invisible
 
+#----------------------------------------------------  #
 # Checking file presence for reproducibility checks ####
 #----------------------------------------------------- #
 
@@ -61,6 +65,7 @@ checkReferenceFilePresence()
   # To verify that outputs were already saved and stored in "_results" folder
 checkOutputPresence()
 
+#----------------------------------  #
 # User configuration ####
 #----------------------------------- #
 
@@ -84,6 +89,7 @@ if (save_ref_outputs && !dir.exists("_results/ref")) {
   dir.create("_results/ref")
 }
 
+#----------------------------------  #
 # Load data ####
 #----------------------------------- #
 
@@ -124,6 +130,7 @@ checkReproducibilityValues(nb_mothers, 22) # checking reproducibility
 # Photoperiod and mismatch treatment coded in one variable
 table(d$Treatment) 
 
+#----------------------------------  #
 # Descriptives ####
 #----------------------------------- #
 
@@ -132,7 +139,7 @@ fem_per_area <- table(d[!duplicated(d$MotherID), "AreaShortName"])
 print(fem_per_area)
 checkReproducibilityValues(fem_per_area, c(3, 6, 6, 7)) # checking reproducibility
 
-#---------------------------------------------------------------------------------------------------------------------------  #
+#----------------------------------  #
 # Fitness curve ####
 #----------------------------------  #
 
