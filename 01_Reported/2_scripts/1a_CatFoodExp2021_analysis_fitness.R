@@ -99,11 +99,11 @@ surv_probs$samplesize <- aggregate(Info~MismTreat + PhotoTreat + MotherID, d_sur
 surv_probs$probs <- 100 - (surv_probs$Event/surv_probs$samplesize*100) # event = death
 head(surv_probs)
 
-surv_avg <- Rmisc::summarySE(surv_probs, measurevar="probs", groupvars=c("MismTreat")) # average of two photoperiod treatments
-surv_avg$samplesize <- aggregate(Info~MismTreat, d_surv, length)$Info
-surv_avg
+surv_mean <- Rmisc::summarySE(surv_probs, measurevar="probs", groupvars=c("MismTreat")) # mean of two photoperiod treatments
+surv_mean$samplesize <- aggregate(Info~MismTreat, d_surv, length)$Info
+surv_mean
 
-raw_surv <- ggplot(data=surv_avg, aes(x=MismTreat, y=probs))+
+raw_surv <- ggplot(data=surv_mean, aes(x=MismTreat, y=probs))+
   scale_colour_manual(values=c("grey27", "orangered2"))+ #"dodgerblue4"
   geom_jitter(data=surv_probs, aes(col=PhotoTreat), alpha=0.3, size=3, height=0.5, width=0.25)+
   geom_point(size=5, col="black") +
@@ -149,7 +149,7 @@ glm.pred$rel <- glm.pred$survprob/mean(filter(glm.pred, MismTreat==1)$survprob) 
 head(glm.pred)
 
 # Visualize predictions ####
-pred <- Rmisc::summarySE(glm.pred, measurevar="survprob", groupvars=c("MismTreat")) # average of two photoperiod treatments
+pred <- Rmisc::summarySE(glm.pred, measurevar="survprob", groupvars=c("MismTreat")) # mean of two photoperiod treatments
 pred$samplesize <- aggregate(CaterpillarID~MismTreat, data=d_surv, length)$CaterpillarID
 
 # Add predictions to raw data figure
@@ -158,7 +158,7 @@ p_surv <- raw_surv + #geom_line(data=pred, aes(y=survprob*100)) +
 p_surv
 # ggsave(filename="_results/Survival_wpred_rev.png", plot=p_surv, device="png", width=200, height=150, units="mm", dpi="print")
 
-rm(anova1, anova2, glm_res, glm1, glm2, pred, surv_probs, surv_avg, raw_surv) #cleanup
+rm(anova1, anova2, glm_res, glm1, glm2, pred, surv_probs, surv_mean, raw_surv) #cleanup
 
 
 #-----------------------------------
