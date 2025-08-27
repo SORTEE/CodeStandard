@@ -89,15 +89,15 @@ levels(d_surv$Treatment)
 levels(d_surv$PhotoTreat)
 levels(d_surv$MismTreatf)
 levels(d_surv$MotherID)
-table(d_surv$TimeOfEvent)
-table(d_surv$Event) # this variable corresponds to "survival" as defined in the paper (e.g., the response variable in the first binomial mixed-effect model)
+table(d_surv$TimeOfDeath)
+table(d_surv$survival) # this variable corresponds to "survival" as defined in the paper (e.g., the response variable in the first binomial mixed-effect model)
 
 # Visualize survival probabilities ####
 head(d_surv)
 
-surv_probs <- aggregate(Event~MismTreat + PhotoTreat + MotherID, d_surv, sum) # per mother
+surv_probs <- aggregate(survival~MismTreat + PhotoTreat + MotherID, d_surv, sum) # per mother
 surv_probs$samplesize <- aggregate(Info~MismTreat + PhotoTreat + MotherID, d_surv, length)$Info
-surv_probs$probs <- 100 - (surv_probs$Event/surv_probs$samplesize*100) # event = death
+surv_probs$probs <- 100 - (surv_probs$survival/surv_probs$samplesize*100) # survival = death
 head(surv_probs)
 
 surv_mean <- Rmisc::summarySE(surv_probs, measurevar="probs", groupvars=c("MismTreat")) # mean of two photoperiod treatments
@@ -122,7 +122,7 @@ raw_surv
 #-----------------------------------
 head(d_surv) # test if probability of survival differs between treatments
 
-glm1 <- glmer(Event ~ (MismTreat1 + MismTreat2)*PhotoTreat + (1|MotherID), family=binomial, data=d_surv,
+glm1 <- glmer(survival ~ (MismTreat + I(MismTreat^2)) * PhotoTreat + (1 | MotherID), family=binomial, data=d_surv,
               na.action="na.fail", control=glmerControl(calc.derivs=F)) # helps convergence
 anova1 <- drop1(glm1,test="Chi") %>% as.data.frame # interaction not significant; the use of Chi-square test to determine statistical significance should be explicitly mention in the paper
 anova1$mod <- "glm1"
@@ -208,7 +208,7 @@ raw_weight
 # Fit linear mixed model ####
 #-----------------------------------
 
-lm1 <- lmer(PupaWeight ~ (MismTreat1 + MismTreat2)*PhotoTreat + (1|MotherID), data=d_pupa)
+lm1 <- lmer(PupaWeight ~ (MismTreat + I(MismTreat^2)) * PhotoTreat + (1 | MotherID), data=d_pupa)
 anova1 <- anova(lm1) %>% as.data.frame() # interaction not significant
 anova1$mod <- "lm1"
 
@@ -269,7 +269,7 @@ p_weight
 
 # The following models are simplified by excluding the photoperiod treatment effect
 # This is because the final fitness curve (Figure 4 in the paper) is an overall representation of fitness across all conditions
-glm_fit <- glmer(Event ~ MismTreat1 + MismTreat2 + (1 | MotherID), family="binomial", data=d_surv)
+glm_fit <- glmer(survival ~ MismTreat1 + MismTreat2 + (1 | MotherID), family="binomial", data=d_surv)
 lm_fit <- lmer(PupaWeight ~ MismTreat1 + (1 | MotherID), data=d_pupa)
 
 # Get predictions to use for curve ####
