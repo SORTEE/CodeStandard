@@ -82,7 +82,7 @@ length(unique(d_surv$CaterpillarID)) # should be 976
 #-----------------------------------
 levels(d_surv$Treatment)
 levels(d_surv$PhotoTreat)
-levels(d_surv$MismTreatf) # as factor or not? Marcel thinks not ####
+levels(d_surv$MismTreatf)
 levels(d_surv$MotherID)
 table(d_surv$TimeOfEvent)
 table(d_surv$Event) # this variable corresponds to "survival" as defined in the paper (e.g., the response variable in the first binomial mixed-effect model)
