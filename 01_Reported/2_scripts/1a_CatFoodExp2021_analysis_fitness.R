@@ -37,6 +37,7 @@ table(d$Treatment) # photoperiod and mismatch treatment coded in one variable
 # Expected n = 22 clutches × 15 treatments × 3 replicates = 990
 str(d)
 # Actual n = 976 → missing 14 individuals
+# The `Tree` column in this dataset refers to the tree ID where the mother moth was caught as per the long-term field data collection described in the paper.
 xtabs(~ Treatment + MotherID, data = d)
 # specific clutch × treatment combinations with < 3 individuals:
 # e.g., ConstDay0 × MotherID=16612 has 0; several others have 2 instead of 3
