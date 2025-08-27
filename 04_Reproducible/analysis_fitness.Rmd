@@ -1,13 +1,21 @@
-# Analysis of Phenological mismatch experiment 2021 ####
-# Manipulated timing of egg hatching of eggs from wild Mothers caught in 2020
-# Either hatching on day of budburst (Day0), before (Day-4 to -1), or after (Day+1 to +5)
-# Disentangle effects of photoperiod and food quality: photoperiod treatment (changing or constant)
+---
+title: "Analysis of Phenological mismatch experiment 2021"
+author: "SORTEE"
+date: "2025-08-27"
+output: 
+  html_document:
+    toc: TRUE
+---
 
-  # This is the (hopefully?) improved version of the code following the CodeStandard Hackathon
-  # Concerning section 4 (reproducibility)
+# 1. Introduction
 
-# !!!! Important !!!!
-# In order for the script to work properly, please open R project in main folder
+This `.html` file goes along the script `1a_CatFoodExp2021_analysis_fitness.R` needed to reproduce the analysis about the analysis of phenological mismatch (experiment 2021) in the paper _Phenological mismatch affects individual fitness and population growth in the winter moth_, published in Proc Roy Soc B: https://doi.org/10.1098/rspb.2023.0414. It can be reproduced with the RMarkDown document `analysis_fitness.Rmd`.
+
+- Manipulated timing of egg hatching of eggs from wild Mothers caught in 2020
+- Either hatching on day of budburst (Day0), before (Day-4 to -1), or after (Day+1 to +5)
+- Disentangle effects of photoperiod and food quality: photoperiod treatment (changing or constant)
+
+```{r Initiation, echo = FALSE, results = FALSE, message = FALSE, warning = FALSE}
 
 #----------------------------------  #
 # Initiation ####
@@ -117,7 +125,11 @@ if(file_exists == F) {
 
 # Read data
 d <- read_csv(file_path)
-head(d)
+```
+
+Once all the necessary packages have been loaded, along with the data (which is loaded automatically from Dryad), let's take a quick look at the data. We check that we have the right number of mothers (which should be 22) and the right number of females per area (which should be 3, 6, 6 and 7).
+
+```{r Descriptives, echo = TRUE}
 
 # renaming TubeID as MotherID to match the terminology used in the Statistical section of the paper
 d <- dplyr::rename(d, MotherID = TubeID)
@@ -130,26 +142,22 @@ checkReproducibilityValues(nb_mothers, 22) # checking reproducibility
 # Photoperiod and mismatch treatment coded in one variable
 table(d$Treatment) 
 
-#----------------------------------  #
-# Descriptives ####
-#----------------------------------- #
-
 # N females per Area
 fem_per_area <- table(d[!duplicated(d$MotherID), "AreaShortName"])
 print(fem_per_area)
 checkReproducibilityValues(fem_per_area, c(3, 6, 6, 7)) # checking reproducibility
+```
 
-#----------------------------------  #
-# Fitness curve ####
-#----------------------------------  #
+Now we can start with the data analysis. Our first research question is : What are the fitness consequences of day to day timing (a)synchrony with budburst?
 
-  # RQ1: What are the fitness consequences of day to day timing (a)synchrony with budburst?
+# 2. Survival analysis
 
+## 2.1 Survival data
 
-## Survival analysis ####
-#----------------------------------- #
+Let us start with the survival analysis. We create the object `d_surv` containing survival values (`Event` column). We check that we have the right number of caterpillars (976). Below you can see the levels for each variable.
 
-  ### Survival data ####
+```{r Survival data, echo = TRUE}
+
 d_surv <- d %>% mutate(PhotoTreat=gsub("(\\w+)Day.+","\\1",Treatment), MismTreat=gsub("\\w+(Day.+)","\\1",Treatment)) %>% 
   select(MotherID, Treatment, PhotoTreat, MismTreat, CaterpillarID, DeadAprilDay, PupationAprilDay) %>%
   pivot_longer(cols=c(DeadAprilDay, PupationAprilDay), names_to="Info", values_to="TimeOfEvent") %>%
@@ -187,10 +195,13 @@ levels(d_surv$MismTreatf) # as factor or not? Marcel thinks not
 levels(d_surv$MotherID)
 table(d_surv$TimeOfEvent)
 table(d_surv$Event) # this variable corresponds to "survival" as defined in the paper (e.g., the response variable in the first binomial mixed-effect model)
+```
 
-### Visualize survival probabilities ####
-head(d_surv)
+## 2.2 Survival probabilites
 
+Then we can investigate survival probabilities in the table and figures below. `surv_probs` contains survival probability per mother and `surv_avg` the survival averaged over photoperiod treatments. Mother survival plotted according to the photoperiod treatment can be seen in the figure `surv_avg` below.
+
+```{r Visualize survival probabilities, echo = TRUE}
 surv_probs <- aggregate(Event~MismTreat + PhotoTreat + MotherID, d_surv, sum) # per mother
 surv_probs$samplesize <- aggregate(Info~MismTreat + PhotoTreat + MotherID, d_surv, length)$Info
 surv_probs$probs <- 100 - (surv_probs$Event/surv_probs$samplesize*100) # event = death
@@ -235,11 +246,12 @@ checkReproducibilityOutput(obtained = raw_surv,
 
 # To read reference file for visual checking
 if(read_ref_outputs) readReferenceFile("raw_surv")
+```
+## 2.3 Fit binomial models
 
-### Fit binomial model ####
-#-----------------------------------  #
-head(d_surv) # test if probability of survival differs between treatments
+Now we can fit binomial models to test if the probability of survival differs between treatments. Results from the final model can be seen below.
 
+```{r Fit binomial models, echo = TRUE}
 glm1 <- glmer(Event ~ (MismTreat1 + MismTreat2)*PhotoTreat + (1|MotherID), family=binomial, data=d_surv,
               na.action="na.fail", control=glmerControl(calc.derivs=F)) # helps convergence
 anova1 <- drop1(glm1,test="Chi") %>% as.data.frame 
@@ -276,7 +288,13 @@ if(read_ref_outputs) {
   readReferenceFile("glm_surv_res")
   readReferenceFile("glm_surv_anova")
 }
+```
 
+## 2.4 Get survival predictions
+
+Now we can look at model predictions in `p_surv` figure just below.
+
+```{r Get survival predictions, echo = TRUE}
 ### Get predictions ####
 glm.pred <- d_surv[!duplicated(d_surv[,c("MotherID", "Treatment")]),] # each replicate assigned same prediction, so remove duplicates
 glm.pred$pred <- predict(glm_final, newdata=glm.pred, type="response") # predictions are probability of dying now
@@ -312,10 +330,15 @@ checkReproducibilityOutput(obtained = p_surv,
 if(read_ref_outputs) readReferenceFile("p_surv")
 
 rm(anova1, anova2, glm_res, glm1, glm2, pred, surv_probs, surv_avg, raw_surv) #cleanup
+```
 
+# 2. Pupation weight analysis
 
-## Pupation weight analysis ####
-#-----------------------------------  #
+## 2.1 Pupation weight data
+
+Let us pursue with the analysis of pupation weight. We create the object `d_pupa` containing only individuals that survived until pupation. We check that we have the right number of surviving individuals (346), which should make up 35% of the initial number of caterpillars.
+
+```{r Pupation weight data, echo = TRUE}
 head(d)
 
 d_pupa <- d %>% mutate(PhotoTreat=gsub("(\\w+)Day.+","\\1",Treatment), MismTreat=gsub("\\w+(Day.+)","\\1",Treatment), PupaWeight=PupaWeight_ingrams*1000) %>%
@@ -336,9 +359,11 @@ checkReproducibilityValues(n_survived, 346) # automatic reproducibility checking
 percent_survived <- n_survived/nrow(d)*100 
 print(percent_survived) # ~35%
 checkReproducibilityValues(percent_survived, 35.45082) # automatic reproducibility checking
+```
 
+## 2.2 Visualize pupation weight data
 
-### Visualize ####
+```{r Visualize pupation weight data, echo = TRUE}
 weight <- Rmisc::summarySE(d_pupa, measurevar="PupaWeight", groupvars=c("MismTreat", "PhotoTreat"))
 weight$pos <- ifelse(is.na(weight$se)==T, 0, weight$se) # position of sample size labels
 weight
@@ -383,8 +408,12 @@ checkReproducibilityOutput(obtained = raw_weight,
   # To read the reference file for visual comparison
 if(read_ref_outputs) readReferenceFile("raw_weight")
 
-### Fit linear mixed model ####
-#-----------------------------------  #
+
+```
+
+## 2.3 Fit linear mixed model
+
+```{r Fit linear mixed model ####, echo = TRUE}
 lm1 <- lmer(PupaWeight ~ (MismTreat1 + MismTreat2)*PhotoTreat + (1|MotherID), data=d_pupa)
 anova1 <- anova(lm1) %>% as.data.frame() # interaction not significant
 anova1$mod <- "lm1"
@@ -438,8 +467,11 @@ if(read_ref_outputs) {
 lm.pred <- d_pupa[!duplicated(d_pupa[,c("MotherID", "Treatment")]),] # each replicate assigned same prediction, so remove duplicates
 lm.pred$pred <- predict(lm_final, newdata=lm.pred, type="response")
 head(lm.pred)
+```
 
-### Visualize predictions ####
+## 2.4 Visualize weight predictions
+
+```{r Visualize weight predictions, echo = TRUE}
 pred1 <- Rmisc::summarySE(lm.pred, measurevar="pred", groupvars=c("MismTreat", "PhotoTreat")) # significant effect of photoperiod, so show separate means
 pred1$samplesize <- weight$N
 pred1$pos <- ifelse(is.na(pred1$se)==T, 0, pred1$se) # position of sample size labels
@@ -467,11 +499,13 @@ checkReproducibilityOutput(obtained = p_weight,
 
 # To read the reference file for visual comparison
 if(read_ref_outputs) readReferenceFile("p_weight")
+```
 
+# 3. Making figure 2
 
-## Making figure 2 ####
-#--------------------------------------------  #
+Now we can make figure 2 that contains both survival and weight data and predictions.
 
+```{r Making figure 2, echo = TRUE}
 # Making figure 2 entirely code-based
 # common_legend in ggarrange() does not work properly here
   # (to get legend on the right)
@@ -517,11 +551,13 @@ message('fig2 should match the file saved as _results/ref/fig_2_expected.rds')
 message('Set read_ref_outputs to TRUE and run the following line to plot the reference file:')
 if(read_ref_outputs)
   readReferenceFile("fig2")
+```
 
+# 4. Get fitness curve
 
-## Get fitness curve ####
-#--------------------------------------------  #
+## 4.1 Fit GLM
 
+```{r Fit GLM, echo = TRUE}
 # Don't care about PhotoTreat effect, drop from models
 glm_fit <- glmer(Event ~ MismTreat1 + MismTreat2 + (1 | MotherID), family="binomial", data=d_surv)
 lm_fit <- lmer(PupaWeight ~ MismTreat1 + (1 | MotherID), data=d_pupa)
@@ -536,18 +572,23 @@ lm.fit$pred <- predict(lm_fit, newdata=lm.fit, type="response")
 
 head(glm.fit) # pred = probability of dying, survpred=1-pred, 220 observations = 22 mothers * 10 MismTreat groups
 head(lm.fit) # pred=predicted weight from lmer, only 154 observations
+```
 
 
-### Fit curve to absolute fitness ####
-#-----------------------------------  #
+## 4.2 Fit curve to absolute fitness
+
+```{r Fit curve, echo = TRUE}
 RelFit <- merge(glm.fit[,c("MotherID", "MismTreat", "survpred")], lm.fit[,c("MotherID", "MismTreat", "pred")], by=c("MotherID", "MismTreat"), all=T)
 colnames(RelFit)[c(3,4)] <- c("survpred", "pupwpred")
 RelFit$Fit <- RelFit$survpred*RelFit$pupwpred # multiply absolute values
 head(RelFit) # can only do for 154 observations, clutches with >=1 caterpillar surviving until pupation
 table(RelFit$MismTreat, is.na(RelFit$Fit)) # for the other clutches, fitness = 0
 RelFit$Fit2 <- ifelse(is.na(RelFit$Fit)==T, 0, RelFit$Fit)
+```
 
-### loess model to describe the curve ####
+## 4.3 LOESS model to describe the curve
+
+```{r loess model, echo = TRUE}
 loess_mod <- loess(Fit2~ -1 + MismTreat,  data=RelFit) 
 summary(loess_mod)
 
@@ -573,7 +614,11 @@ if(save_ref_outputs) write_rds(RelFit_means, file = "_results/ref/RelFit_means_e
 checkReproducibilityOutput(RelFit_means, "_results/ref/RelFit_means_expected.rds")
   # To read the reference file for visual comparison
 if(read_ref_outputs) readReferenceFile("RelFit_means")
+```
 
+## 4.4 Visualize predictions
+
+```{r fitness predictions, echo = TRUE}
 ### Visualize predictions ####
 p_relfit <- ggplot(data=RelFit, aes(x=MismTreat, y=rel)) +
   geom_jitter(size=3, alpha=0.4, height=0, width=0.25, shape=21, fill="dodgerblue2", col="dodgerblue4")+
@@ -606,11 +651,11 @@ checkReproducibilityOutput(obtained = p_relfit,
 
 # To read the reference file for visual comparison
 if(read_ref_outputs) readReferenceFile("p_relfit")
+```
 
+## 4.5 Average fitness loss per day
 
-### Average fitness loss per day ####
-#----------------------------------  #
-
+```{r daily fitness loss, echo = TRUE}
   # 1. Hatching earlier than budburst date
 fitness_loss_hatchedEarlier <- 
 RelFit_means %>%
@@ -670,8 +715,9 @@ if(read_ref_outputs) {
   readReferenceFile("fitness_loss_hatchedEarlier")
   readReferenceFile("fitness_loss_hatchedLater")
 }
+```
 
-
+```{r session info, echo = FALSE, message = FALSE, results = FALSE}
 #--------------------------------------------  #
 ## Session info ####
 #--------------------------------------------  #
@@ -679,3 +725,6 @@ if(read_ref_outputs) {
 if(save_session_info) 
   sessionInfo() %>% 
   capture.output(file="_src/env_CatFoodExp2021_analysis.txt")
+
+```
+
