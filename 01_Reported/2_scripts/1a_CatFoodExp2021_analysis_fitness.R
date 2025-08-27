@@ -60,8 +60,12 @@ table(d[!duplicated(d$MotherID), "AreaShortName"])
 # The following section reshapes and cleans the data to prepare it for survival analysis
 d_surv <- d %>% mutate(PhotoTreat=gsub("(\\w+)Day.+","\\1",Treatment), MismTreat=gsub("\\w+(Day.+)","\\1",Treatment)) %>% 
   select(MotherID, Treatment, PhotoTreat, MismTreat, CaterpillarID, DeadAprilDay, PupationAprilDay) %>%
+  # The pivot_longer function is used to combine the `DeadAprilDay` and `PupationAprilDay` columns into a single `TimeOfDeath` column
+  # This is necessary to create a "survival" variable that indicates whether the caterpillar died or survived to pupate
   pivot_longer(cols=c(DeadAprilDay, PupationAprilDay), names_to="Info", values_to="TimeOfDeath") %>%
   filter(!is.na(TimeOfDeath)) %>%
+  # The `survival` variable is created as a binary indicator for the binomial mixed model
+  # It is coded as 1 for death (`DeadAprilDay`) and 0 for survival (`PupationAprilDay`)
   mutate(survival=ifelse(Info=="DeadAprilDay", 1, 0), Treatment=as.factor(Treatment), PhotoTreat=as.factor(ifelse(PhotoTreat=="Chang", "Changing", "Constant")), MismTreatf=as.factor(MismTreat), MotherID=as.factor(MotherID)) %>%
   mutate(Treatment=factor(Treatment, levels=c("ChangDay-4", "ChangDay-3", "ChangDay-2", "ChangDay-1", "ChangDay0", "ChangDay+1", "ChangDay+2", "ChangDay+3", "ChangDay+4",
                                               "ChangDay+5",  "ConstDay-4", "ConstDay-2", "ConstDay0", "ConstDay+2", "ConstDay+4")), 
@@ -69,7 +73,6 @@ d_surv <- d %>% mutate(PhotoTreat=gsub("(\\w+)Day.+","\\1",Treatment), MismTreat
          MismTreat=as.numeric(gsub("Day(.+)","\\1",MismTreat))) %>%
   mutate(MismTreat1=MismTreat+5, # no negatives to be able to fit squared term
          MismTreat2=(MismTreat+5)^2) # squared term to add in model
-# TimeOfEvent=DeadAprilDay or PupationAprilDay, with event=Died or Survived
 
 head(d_surv)
 str(d_surv)
@@ -124,7 +127,7 @@ anova1 <- drop1(glm1,test="Chi") %>% as.data.frame # interaction not significant
 anova1$mod <- "glm1"
 
 # The interaction terms are removed here because their p-values were not significant in the `glm1` model
-
+# Mismatch has a significant nonlinear effect on survival, while photoperiod does not. This is reflected in Figure 2a and the corresponding results section of the paper
 glm2 <- update(glm1, ~ . -MismTreat1:PhotoTreat - MismTreat2:PhotoTreat) # simplify model
 anova2 <- drop1(glm2,test="Chi") %>% as.data.frame #no effect of PhotoTreatment, but effect of MismTreat and MismTreat^2
 anova2$mod <- "glm2"
@@ -214,6 +217,7 @@ anova2 <- anova(lm2) %>% as.data.frame() # Squared mismatch not significant
 anova2$mod <- "lm2"
 
 # The squared mismatch term (`MismTreat2`) is removed here because it was not significant in the `lm2` model
+# Pupation weight is linearly affected by mismatch and has a significant photoperiod effect, as stated in the results section of the paper and shown in Figure 2b
 lm3 <- update(lm2, ~ . - MismTreat2) # simplify model
 anova3 <- anova(lm3) %>% as.data.frame() # PhotoTreat and MismTreat significant
 anova3$mod <- "lm3"
