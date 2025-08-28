@@ -9,7 +9,7 @@ output:
 
 # 1. Introduction
 
-This `.html` file goes along the script `1a_CatFoodExp2021_analysis_fitness.R` needed to reproduce the analysis about the analysis of phenological mismatch (experiment 2021) in the paper _Phenological mismatch affects individual fitness and population growth in the winter moth_, published in Proc Roy Soc B: https://doi.org/10.1098/rspb.2023.0414. It can be reproduced with the RMarkDown document `analysis_fitness.Rmd`.
+This `.html` file goes along the script `1a_CatFoodExp2021_analysis_fitness.R` needed to reproduce the analysis about the analysis of phenological mismatch (experiment 2021) in the paper _Phenological mismatch affects individual fitness and population growth in the winter moth_, published in Proc Roy Soc B: https://doi.org/10.1098/rspb.2023.0414. This document can be used as a reference for result reproducibility (figures, tables, numbers). Nonetheless, it can be reproduced with the RMarkDown document `analysis_fitness.Rmd`. Note that the `.Rmd` file, as well as the main `.R` script, also contains custom reproducibility check functions that can be used by users to compare produced outputs to reference files.
 
 - Manipulated timing of egg hatching of eggs from wild Mothers caught in 2020
 - Either hatching on day of budburst (Day0), before (Day-4 to -1), or after (Day+1 to +5)
@@ -154,7 +154,7 @@ Now we can start with the data analysis. Our first research question is : What a
 
 ## 2.1 Survival data
 
-Let us start with the survival analysis. We create the object `d_surv` containing survival values (`Event` column). We check that we have the right number of caterpillars (976). Below you can see the levels for each variable.
+Let us start with the survival analysis. We create the object `d_surv` containing survival values (`Event` column). We check that we have the right number of caterpillars (976). Let us also observe the levels for each variable.
 
 ```{r Survival data, echo = TRUE}
 
@@ -199,7 +199,7 @@ table(d_surv$Event) # this variable corresponds to "survival" as defined in the 
 
 ## 2.2 Survival probabilites
 
-Then we can investigate survival probabilities in the table and figures below. `surv_probs` contains survival probability per mother and `surv_avg` the survival averaged over photoperiod treatments. Mother survival plotted according to the photoperiod treatment can be seen in the figure `surv_avg` below.
+Then we can investigate survival probabilities in the table and figures below. `surv_probs` contains survival probability per mother and `surv_avg` the survival averaged over photoperiod treatments. Mother survival plotted according to the photoperiod treatment can be seen in the figure `raw_surv`, displayed below.
 
 ```{r Visualize survival probabilities, echo = TRUE}
 surv_probs <- aggregate(Event~MismTreat + PhotoTreat + MotherID, d_surv, sum) # per mother
@@ -292,7 +292,7 @@ if(read_ref_outputs) {
 
 ## 2.4 Get survival predictions
 
-Now we can look at model predictions in `p_surv` figure just below.
+Now we can investigate model predictions in `p_surv` figure just below.
 
 ```{r Get survival predictions, echo = TRUE}
 ### Get predictions ####
@@ -505,7 +505,7 @@ if(read_ref_outputs) readReferenceFile("p_weight")
 
 Now we can make figure 2 that contains both survival and weight data and predictions.
 
-```{r Making figure 2, echo = TRUE}
+```{r Making figure 2, echo = TRUE, out.width = "100%"}
 # Making figure 2 entirely code-based
 # common_legend in ggarrange() does not work properly here
   # (to get legend on the right)
@@ -527,7 +527,6 @@ fig2 <-
                      rel_widths = c(0.6, 0.1)) +
   bgcolor('white')
 
-fig2
 
   # sate save_figures to TRUE to save the figure again
 if(save_figures) 
@@ -552,10 +551,15 @@ message('Set read_ref_outputs to TRUE and run the following line to plot the ref
 if(read_ref_outputs)
   readReferenceFile("fig2")
 ```
+![Figure 2.  Fitness consequences of individual phenological mismatch. Check paper for more details.](_results/figure_2.png)
+
+<!-- Figure 2 needs to be stored locally in order to be loaded here -->
 
 # 4. Get fitness curve
 
 ## 4.1 Fit GLM
+
+Now we can estimate the relative fitness curve for phenological mismatch, combining the predicted survival probabilities and the predicted pupation weights (as a proxy for fecundity) for each phenological mismatch treatment. Let us start with fitting the corresponding models.
 
 ```{r Fit GLM, echo = TRUE}
 # Don't care about PhotoTreat effect, drop from models
@@ -577,6 +581,8 @@ head(lm.fit) # pred=predicted weight from lmer, only 154 observations
 
 ## 4.2 Fit curve to absolute fitness
 
+We then estimate fitness by multiplying predictions of survival probabilities with expected pupation weights in `RelFit`table (`Fit` and `Fit2`columns, see comments below).
+
 ```{r Fit curve, echo = TRUE}
 RelFit <- merge(glm.fit[,c("MotherID", "MismTreat", "survpred")], lm.fit[,c("MotherID", "MismTreat", "pred")], by=c("MotherID", "MismTreat"), all=T)
 colnames(RelFit)[c(3,4)] <- c("survpred", "pupwpred")
@@ -587,6 +593,8 @@ RelFit$Fit2 <- ifelse(is.na(RelFit$Fit)==T, 0, RelFit$Fit)
 ```
 
 ## 4.3 LOESS model to describe the curve
+
+We then express fitness at each day of mismatch with oak budburst date relatively to the fitness peak (which occurs at day 2) in the `rel` column of `relFit` object and average over treatments in `RelFit_means`. We also  use a LOESS model to fit a curve to the data (see `curve` just below).
 
 ```{r loess model, echo = TRUE}
 loess_mod <- loess(Fit2~ -1 + MismTreat,  data=RelFit) 
@@ -617,6 +625,8 @@ if(read_ref_outputs) readReferenceFile("RelFit_means")
 ```
 
 ## 4.4 Visualize predictions
+
+Finally, we visualize fitness predictions in the `p_relfit` curve below.
 
 ```{r fitness predictions, echo = TRUE}
 ### Visualize predictions ####
@@ -654,6 +664,8 @@ if(read_ref_outputs) readReferenceFile("p_relfit")
 ```
 
 ## 4.5 Average fitness loss per day
+
+Finally, we can calculate the average daily fitness loss for individuals that hatched either before or after the 'peak' day (`fitness_loss_hatchedEarlier` or `fitness_loss_hatchedLater`, respectively).
 
 ```{r daily fitness loss, echo = TRUE}
   # 1. Hatching earlier than budburst date
