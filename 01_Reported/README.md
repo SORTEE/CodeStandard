@@ -28,6 +28,32 @@ R scripts to reproduce the analysis and visualization (incl. manuscript figures)
 ### Script: ```2_scripts/suppl_pupaweight_proxy.R ```
 Supplemental: Is pupation weight a good proxy for fecundity?
 
+#### Generated Output
+The 1a_CatFoodExp2021_analysis_fitness.R script generates output files saved to the `_results` directory. 
+These files include data tables and plots that can be used to reproduce the paper's findings.
+
+`_results/output_Surv_glmer.csv`: Contains the model coefficients from the final binomial mixed-effects model for survival.
+
+`_results/anova_Surv_glmer.csv`: Presents the ANOVA results (Chi-square test statistics and p-values) for the survival mixed-effects models.
+
+`_results/Survival_raw.png`: A plot visualizing the raw survival probabilities of caterpillars across different mismatch treatments.
+
+`_results/Survival_wpred_rev.png`: The raw survival plot with an added curve representing the predicted survival probabilities from the statistical model.
+
+`_results/output_PupaWeight_lmer.csv`: Contains the model coefficients from the final linear mixed-effects model for pupation weight.
+
+`_results/anova_PupaWeight_lmer.csv`: Presents the ANOVA results for the pupation weight mixed-effects models.
+
+`_results/PupWeight_raw.png`: A plot of the raw pupation weights, separated by photoperiod treatment.
+
+`_results/PupWeight_wpred_rev.png`: The raw pupation weight plot with added lines representing the predicted values from the statistical model.
+
+`_results/RelFitness_rev.csv`: A data table summarizing the calculated relative fitness for each mismatch treatment day.
+
+`_results/FitnessCurve_rev.png`: A plot of the relative fitness curve, combining the predicted survival and pupation weight data.
+
+_src/env_CatFoodExp2021_analysis.txt: A text file with the session information, including the R version and all loaded package versions.
+
 See ```_src/env_CatFoodExp2021_analysis.txt``` for used R package versions.
 
 &nbsp;

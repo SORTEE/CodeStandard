@@ -10,18 +10,17 @@
 
 
 # Open R project in main folder
-
-# Restore library
+# Restore library 
 renv::restore()
 
-# Load packages
+# Load packages ####
 #-----------------------------------
-library(tidyverse)
-library(cowplot)
-theme_set(theme_cowplot()) #white background instead of grey -> don't load if want grey grid
-library(lme4)
-library(lmerTest)
-library(Rmisc)
+library(tidyverse)         # Used for data cleaning and manipulation.
+library(cowplot)           # Used for creating and arranging plots, providing a clean theme for publication
+theme_set(theme_cowplot()) # Use white background instead of grey
+library(lme4)              # Used for fitting linear and generalized linear mixed-effects models (LMMs and GLMMs)
+library(lmerTest)          # Provides p-values for LMMs and GLMMs using Satterthwaite's approximation
+library(Rmisc)             # Used for calculating standard error and confidence intervals for data summaries
 
 
 # Load data ####
@@ -32,8 +31,17 @@ head(d)
 # renaming TubeID as MotherID to match the terminology used in the Statistical section of the paper
 d <- dplyr::rename(d, MotherID = TubeID)
 
-length(unique(d$MotherID)) # should be 22 mothers
+length(unique(d$MotherID)) # 22 mothers
 table(d$Treatment) # photoperiod and mismatch treatment coded in one variable
+
+# Expected n = 22 clutches × 15 treatments × 3 replicates = 990
+str(d)
+# Actual n = 976 → missing 14 individuals
+# The `Tree` column in this dataset refers to the tree ID where the mother moth was caught as per the long-term field data collection described in the paper.
+xtabs(~ Treatment + MotherID, data = d)
+# specific clutch × treatment combinations with < 3 individuals:
+# e.g., ConstDay0 × MotherID=16612 has 0; several others have 2 instead of 3
+# some individuals lacked survival or weight data
 
 
 # Descriptives
@@ -49,18 +57,23 @@ table(d[!duplicated(d$MotherID), "AreaShortName"])
 # RQ1: What are the fitness consequences of day to day timing (a)synchrony with budburst? ####
 
 # Survival data ####
+
+# The following section reshapes and cleans the data to prepare it for survival analysis
 d_surv <- d %>% mutate(PhotoTreat=gsub("(\\w+)Day.+","\\1",Treatment), MismTreat=gsub("\\w+(Day.+)","\\1",Treatment)) %>% 
   select(MotherID, Treatment, PhotoTreat, MismTreat, CaterpillarID, DeadAprilDay, PupationAprilDay) %>%
-  pivot_longer(cols=c(DeadAprilDay, PupationAprilDay), names_to="Info", values_to="TimeOfEvent") %>%
-  filter(!is.na(TimeOfEvent)) %>%
-  mutate(Event=ifelse(Info=="DeadAprilDay", 1, 0), Treatment=as.factor(Treatment), PhotoTreat=as.factor(ifelse(PhotoTreat=="Chang", "Changing", "Constant")), MismTreatf=as.factor(MismTreat), MotherID=as.factor(MotherID)) %>%
+  # The pivot_longer function is used to combine the `DeadAprilDay` and `PupationAprilDay` columns into a single `TimeOfDeath` column
+  # This is necessary to create a "survival" variable that indicates whether the caterpillar died or survived to pupate
+  pivot_longer(cols=c(DeadAprilDay, PupationAprilDay), names_to="Info", values_to="TimeOfDeath") %>%
+  filter(!is.na(TimeOfDeath)) %>%
+  # The `survival` variable is created as a binary indicator for the binomial mixed model
+  # It is coded as 1 for death (`DeadAprilDay`) and 0 for survival (`PupationAprilDay`)
+  mutate(survival=ifelse(Info=="DeadAprilDay", 1, 0), Treatment=as.factor(Treatment), PhotoTreat=as.factor(ifelse(PhotoTreat=="Chang", "Changing", "Constant")), MismTreatf=as.factor(MismTreat), MotherID=as.factor(MotherID)) %>%
   mutate(Treatment=factor(Treatment, levels=c("ChangDay-4", "ChangDay-3", "ChangDay-2", "ChangDay-1", "ChangDay0", "ChangDay+1", "ChangDay+2", "ChangDay+3", "ChangDay+4",
                                               "ChangDay+5",  "ConstDay-4", "ConstDay-2", "ConstDay0", "ConstDay+2", "ConstDay+4")), 
-    MismTreatf=factor(MismTreat, levels=c("Day-4", "Day-3", "Day-2", "Day-1", "Day0", "Day+1", "Day+2", "Day+3", "Day+4", "Day+5")),
-    MismTreat=as.numeric(gsub("Day(.+)","\\1",MismTreat))) %>%
+         MismTreatf=factor(MismTreat, levels=c("Day-4", "Day-3", "Day-2", "Day-1", "Day0", "Day+1", "Day+2", "Day+3", "Day+4", "Day+5")),
+         MismTreat=as.numeric(gsub("Day(.+)","\\1",MismTreat))) %>%
   mutate(MismTreat1=MismTreat+5, # no negatives to be able to fit squared term
          MismTreat2=(MismTreat+5)^2) # squared term to add in model
-# Vidisha coded it as TimeOfEvent=DeadAprilDay or PupationAprilDay, with event=Died or Survived
 
 head(d_surv)
 str(d_surv)
@@ -74,24 +87,24 @@ length(unique(d_surv$CaterpillarID)) # should be 976
 #-----------------------------------
 levels(d_surv$Treatment)
 levels(d_surv$PhotoTreat)
-levels(d_surv$MismTreatf) # as factor or not? Marcel thinks not ####
+levels(d_surv$MismTreatf)
 levels(d_surv$MotherID)
-table(d_surv$TimeOfEvent)
-table(d_surv$Event) # this variable corresponds to "survival" as defined in the paper (e.g., the response variable in the first binomial mixed-effect model)
+table(d_surv$TimeOfDeath)
+table(d_surv$survival) # this variable corresponds to "survival" as defined in the paper (e.g., the response variable in the first binomial mixed-effect model)
 
 # Visualize survival probabilities ####
 head(d_surv)
 
-surv_probs <- aggregate(Event~MismTreat + PhotoTreat + MotherID, d_surv, sum) # per mother
+surv_probs <- aggregate(survival~MismTreat + PhotoTreat + MotherID, d_surv, sum) # per mother
 surv_probs$samplesize <- aggregate(Info~MismTreat + PhotoTreat + MotherID, d_surv, length)$Info
-surv_probs$probs <- 100 - (surv_probs$Event/surv_probs$samplesize*100) # event = death
+surv_probs$probs <- 100 - (surv_probs$survival/surv_probs$samplesize*100) # survival = death
 head(surv_probs)
 
-surv_avg <- Rmisc::summarySE(surv_probs, measurevar="probs", groupvars=c("MismTreat")) # average of two photoperiod treatments
-surv_avg$samplesize <- aggregate(Info~MismTreat, d_surv, length)$Info
-surv_avg
+surv_mean <- Rmisc::summarySE(surv_probs, measurevar="probs", groupvars=c("MismTreat")) # mean of two photoperiod treatments
+surv_mean$samplesize <- aggregate(Info~MismTreat, d_surv, length)$Info
+surv_mean
 
-raw_surv <- ggplot(data=surv_avg, aes(x=MismTreat, y=probs))+
+raw_surv <- ggplot(data=surv_mean, aes(x=MismTreat, y=probs))+
   scale_colour_manual(values=c("grey27", "orangered2"))+ #"dodgerblue4"
   geom_jitter(data=surv_probs, aes(col=PhotoTreat), alpha=0.3, size=3, height=0.5, width=0.25)+
   geom_point(size=5, col="black") +
@@ -109,11 +122,13 @@ raw_surv
 #-----------------------------------
 head(d_surv) # test if probability of survival differs between treatments
 
-glm1 <- glmer(Event ~ (MismTreat1 + MismTreat2)*PhotoTreat + (1|MotherID), family=binomial, data=d_surv,
+glm1 <- glmer(survival ~ (MismTreat + I(MismTreat^2)) * PhotoTreat + (1 | MotherID), family=binomial, data=d_surv,
               na.action="na.fail", control=glmerControl(calc.derivs=F)) # helps convergence
 anova1 <- drop1(glm1,test="Chi") %>% as.data.frame # interaction not significant; the use of Chi-square test to determine statistical significance should be explicitly mention in the paper
 anova1$mod <- "glm1"
 
+# The interaction terms are removed here because their p-values were not significant in the `glm1` model
+# Mismatch has a significant nonlinear effect on survival, while photoperiod does not. This is reflected in Figure 2a and the corresponding results section of the paper
 glm2 <- update(glm1, ~ . -MismTreat1:PhotoTreat - MismTreat2:PhotoTreat) # simplify model
 anova2 <- drop1(glm2,test="Chi") %>% as.data.frame #no effect of PhotoTreatment, but effect of MismTreat and MismTreat^2
 anova2$mod <- "glm2"
@@ -135,7 +150,7 @@ glm.pred$rel <- glm.pred$survprob/mean(filter(glm.pred, MismTreat==1)$survprob) 
 head(glm.pred)
 
 # Visualize predictions ####
-pred <- Rmisc::summarySE(glm.pred, measurevar="survprob", groupvars=c("MismTreat")) # average of two photoperiod treatments
+pred <- Rmisc::summarySE(glm.pred, measurevar="survprob", groupvars=c("MismTreat")) # mean of two photoperiod treatments
 pred$samplesize <- aggregate(CaterpillarID~MismTreat, data=d_surv, length)$CaterpillarID
 
 # Add predictions to raw data figure
@@ -144,7 +159,7 @@ p_surv <- raw_surv + #geom_line(data=pred, aes(y=survprob*100)) +
 p_surv
 # ggsave(filename="_results/Survival_wpred_rev.png", plot=p_surv, device="png", width=200, height=150, units="mm", dpi="print")
 
-rm(anova1, anova2, glm_res, glm1, glm2, pred, surv_probs, surv_avg, raw_surv) #cleanup
+rm(anova1, anova2, glm_res, glm1, glm2, pred, surv_probs, surv_mean, raw_surv) #cleanup
 
 
 #-----------------------------------
@@ -152,6 +167,8 @@ rm(anova1, anova2, glm_res, glm1, glm2, pred, surv_probs, surv_avg, raw_surv) #c
 #-----------------------------------
 head(d)
 
+# This section prepares the data for pupation weight analysis by creating new variables for photoperiod and mismatch treatment,
+# and converting pupation weight from grams to milligrams for better readability
 d_pupa <- d %>% mutate(PhotoTreat=gsub("(\\w+)Day.+","\\1",Treatment), MismTreat=gsub("\\w+(Day.+)","\\1",Treatment), PupaWeight=PupaWeight_ingrams*1000) %>%
   select(ExperimentName, MotherID, Treatment, PhotoTreat, MismTreat, CaterpillarID, PupationAprilDay, PupaWeight) %>%
   filter(!is.na(PupationAprilDay)) %>%
@@ -190,24 +207,31 @@ raw_weight
 
 # Fit linear mixed model ####
 #-----------------------------------
-lm1 <- lmer(PupaWeight ~ (MismTreat1 + MismTreat2)*PhotoTreat + (1|MotherID), data=d_pupa)
+
+lm1 <- lmer(PupaWeight ~ (MismTreat + I(MismTreat^2)) * PhotoTreat + (1 | MotherID), data=d_pupa)
 anova1 <- anova(lm1) %>% as.data.frame() # interaction not significant
 anova1$mod <- "lm1"
 
+# The interaction terms are removed here because they were not significant in the `lm1` model
 lm2 <- update(lm1, ~ . - MismTreat1:PhotoTreat - MismTreat2:PhotoTreat) # simplify model
 anova2 <- anova(lm2) %>% as.data.frame() # Squared mismatch not significant
 anova2$mod <- "lm2"
 
+# The squared mismatch term (`MismTreat2`) is removed here because it was not significant in the `lm2` model
+# Pupation weight is linearly affected by mismatch and has a significant photoperiod effect, as stated in the results section of the paper and shown in Figure 2b
 lm3 <- update(lm2, ~ . - MismTreat2) # simplify model
 anova3 <- anova(lm3) %>% as.data.frame() # PhotoTreat and MismTreat significant
 anova3$mod <- "lm3"
 
-# Still there if exclude first time point with low sample size?
+# lm4 is a check to see if the model's results change when the `MismTreat == -4` data point is removed,
+# as it has a very low sample size. The results are still significant, indicating the findings are robust
 lm4 <- lmer(PupaWeight ~ -1 + MismTreat1 + PhotoTreat + (1|MotherID), data=filter(d_pupa, MismTreat!=-4))
 anova(lm4) # yes
 
 
 # Final model ####
+
+# The final model used for the paper is `lm3`, as it includes all available data
 lm_final <- lm3
 summary(lm_final)
 lm_res <- summary(lm_final)$coefficients %>% as.data.frame
@@ -243,8 +267,9 @@ p_weight
 # Get fitness curve ####
 #--------------------------------------------
 
-# Don't care about PhotoTreat effect, drop from models ####
-glm_fit <- glmer(Event ~ MismTreat1 + MismTreat2 + (1 | MotherID), family="binomial", data=d_surv)
+# The following models are simplified by excluding the photoperiod treatment effect
+# This is because the final fitness curve (Figure 4 in the paper) is an overall representation of fitness across all conditions
+glm_fit <- glmer(survival ~ MismTreat1 + MismTreat2 + (1 | MotherID), family="binomial", data=d_surv)
 lm_fit <- lmer(PupaWeight ~ MismTreat1 + (1 | MotherID), data=d_pupa)
 
 # Get predictions to use for curve ####
@@ -302,8 +327,6 @@ p_relfit <- ggplot(data=RelFit, aes(x=MismTreat, y=rel)) +
         axis.text=element_text(size=16), legend.text = element_text(size=16), legend.title=element_text(size=17))
 p_relfit
 # ggsave(filename="_results/FitnessCurve_rev.png", plot=p_relfit, device="png", width=200, height=150, units="mm", dpi="print")
-
-
 
 
 sessionInfo() %>% capture.output(file="_src/env_CatFoodExp2021_analysis.txt")
