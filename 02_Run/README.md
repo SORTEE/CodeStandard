@@ -85,10 +85,9 @@ using the R Installation Manager [`rig`](https://github.com/r-lib/rig).
 To reproduce the project:
 
 1.  Clone this repository. For those not familiar with GitHub, click on
-    the green button $`\colorbox{darkgreen}{{\color{white}{<> Code}}}`$
-    on the [project main page](https://github.com/SORTEE/CodeStandard)
-    on GitHub and then on `Download ZIP` to download the entire
-    repository, thus unzip it
+    the green button `<> Code` on the [project main
+    page](https://github.com/SORTEE/CodeStandard) on GitHub and then on
+    `Download ZIP` to download the entire repository, thus unzip it
 2.  Install RStudio and rig (see instructions
     [here](https://posit.co/download/rstudio-desktop/) for RStudio and
     [here](https://github.com/r-lib/rig?tab=readme-ov-file#%EF%B8%8F-installing-rig-)

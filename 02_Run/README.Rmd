@@ -65,7 +65,7 @@ The project uses [`renv`](https://rstudio.github.io/renv/index.html) for package
 
 To reproduce the project:
 
-1. Clone this repository. For those not familiar with GitHub, click on the green button $\colorbox{darkgreen}{{\color{white}{<> Code}}}$ on the [project main page](https://github.com/SORTEE/CodeStandard) on GitHub and then on `Download ZIP` to download the entire repository, thus unzip it
+1. Clone this repository. For those not familiar with GitHub, click on the green button `<> Code` on the [project main page](https://github.com/SORTEE/CodeStandard) on GitHub and then on `Download ZIP` to download the entire repository, thus unzip it
 2. Install RStudio and rig (see instructions [here](https://posit.co/download/rstudio-desktop/) for RStudio and [here](https://github.com/r-lib/rig?tab=readme-ov-file#%EF%B8%8F-installing-rig-) for `rig`)
 3. Open a terminal and use the rig commang `rig add` to install `r R.version.string`:
 
