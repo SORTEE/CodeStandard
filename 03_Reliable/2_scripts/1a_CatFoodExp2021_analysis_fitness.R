@@ -22,6 +22,8 @@ library(cowplot)
 theme_set(theme_cowplot()) #white background instead of grey -> don't load if want grey grid
 library(lme4)
 library(lmerTest)
+library(performance)
+library(DHARMa)
 library(testthat)
 
 # Load data ####
@@ -53,6 +55,32 @@ test_that("variables types are correct", {
   expect_type(catDataRaw$Sex, "character")
   expect_type(catDataRaw$Remarks, "character")
 })
+
+# Checks number of missing data consistent with article
+test_that("346 pupated", {expect_equal(sum(is.na(catDataRaw$DeadAprilDay)),346)})
+test_that("630 died before pupation", {
+  expect_equal(sum(is.na(catDataRaw$PupationAprilDay)),630)
+  expect_equal(sum(is.na(catDataRaw$PupaWeight_ingrams)),630)
+})
+test_that("962 died before adulthood", {
+  expect_equal(sum(is.na(catDataRaw$AdultNovDate)),962)
+  expect_equal(sum(is.na(catDataRaw$AdultWeight_ingrams)),962)
+  expect_equal(sum(is.na(catDataRaw$Sex)),962)
+})
+
+# Check dataset
+head(catDataRaw) # should print the first 6 rows and the 19 columns
+summary(catDataRaw)
+
+# Check for outliers
+# Histograms should not show any outliers
+hist(catDataRaw$NovemberDate)
+hist(catDataRaw$PupaWeight_ingrams)
+hist(catDataRaw$DeadAprilDay)
+hist(catDataRaw$PupationAprilDay)
+hist(catDataRaw$PupaWeight_ingrams)
+hist(catDataRaw$AdultNovDate)
+hist(catDataRaw$AdultWeight_ingrams)
 
 # renaming TubeID as MotherID to match the terminology used in the Statistical section of the paper
 catData <- rename(catDataRaw, MotherID = TubeID)
@@ -153,6 +181,9 @@ head(catData_surv) # test if probability of survival differs between treatments
 
 glmSurv_step1 <- glmer(Event ~ (MismTreat_noNeg + MismTreat_squared)*PhotoTreat + (1|MotherID), family=binomial, data=catData_surv,
                        na.action="na.fail", control=glmerControl(calc.derivs=F)) # helps convergence
+# Check model assumptions
+check_model(glmSurv_step1)
+
 anovaSurv_step1 <- drop1(glmSurv_step1,test="Chi") %>% as.data.frame # interaction not significant; the use of Chi-square test to determine statistical significance should be explicitly mention in the paper
 anovaSurv_step1$mod <- "glmSurv_step1"
 
@@ -162,6 +193,9 @@ anovaSurv_step2$mod <- "glmSurv_step2"
 
 # Final model ####
 glmSurv_final <- glmSurv_step2
+# Check model assumptions
+check_model(glmSurv_final)
+
 summary(glmSurv_final)# Estimates are log odds
 glmSurv_res <- summary(glmSurv_final)$coefficients %>% as.data.frame
 
@@ -257,6 +291,10 @@ raw_weight
 # Fit linear mixed model ####
 #-----------------------------------
 lmPupa_step1 <- lmer(PupaWeight ~ (MismTreat_noNeg + MismTreat_squared)*PhotoTreat + (1|MotherID), data=catData_pupa)
+# Check model assumptions
+check_model(lmPupa_step1)
+# Line 20 is a clear outlier.
+
 anovaPupa_step1 <- anova(lmPupa_step1) %>% as.data.frame() # interaction not significant
 anovaPupa_step1$mod <- "lmPupa_step1"
 
@@ -271,16 +309,15 @@ anovaPupa_step3$mod <- "lmPupa_step3"
 # Still there if exclude first time point with low sample size?
 lmPupa_step3_excludeOutlier <- lmer(PupaWeight ~ -1 + MismTreat_noNeg + PhotoTreat + (1|MotherID), data=filter(catData_pupa, MismTreat!=-4))
 anova(lmPupa_step3_excludeOutlier) # yes
-
+check_model(lmPupa_step3_excludeOutlier)
 
 # Final model ####
 lmPupa_final <- lmPupa_step3
+# Check model assumptions
+check_model(lmPupa_final)
+
 summary(lmPupa_final)
 lmPupa_res <- summary(lmPupa_final)$coefficients %>% as.data.frame
-
-plot(lmPupa_final) #equal variance? ok
-qqnorm(resid(lmPupa_final)) #normally distributed? ok
-qqline(resid(lmPupa_final))
 
 # write.csv(lmPupa_res, file="_results/output_PupaWeight_lmer.csv", row.names=T)
 # write.csv(rbind(anovaSurv_step1, anovaSurv_step2, anova3), file="_results/anova_PupaWeight_lmer.csv", row.names=T)
