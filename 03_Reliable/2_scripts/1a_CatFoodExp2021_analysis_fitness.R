@@ -143,8 +143,6 @@ p_surv <- raw_surv + #geom_line(data=pred, aes(y=survprob*100)) +
 p_surv
 # ggsave(filename="_results/Survival_wpred_rev.png", plot=p_surv, device="png", width=200, height=150, units="mm", dpi="print")
 
-rm(anovaSurv_step1, anovaSurv_step2, glmSurv_res, glmSurv_step1, glmSurv_step2, pred_surv, surv_probs, surv_avg, raw_surv) #cleanup
-
 
 #-----------------------------------
 # Pupation weight analysis ####
