@@ -184,7 +184,7 @@ glmSurv_step1 <- glmer(Event ~ (MismTreat_noNeg + MismTreat_squared)*PhotoTreat 
 # Check model assumptions
 check_model(glmSurv_step1)
 
-anovaSurv_step1 <- drop1(glmSurv_step1,test="Chi") %>% as.data.frame # interaction not significant; the use of Chi-square test to determine statistical significance should be explicitly mention in the paper
+anovaSurv_step1 <- drop1(glmSurv_step1,test="Chi") %>% as.data.frame # interaction not significant; the use of Chi-square test to determine statistical significance should be explicitly mentioned in the paper
 anovaSurv_step1$mod <- "glmSurv_step1"
 
 glmSurv_step2 <- update(glmSurv_step1, ~ . -MismTreat_noNeg:PhotoTreat - MismTreat_squared:PhotoTreat) # simplify model
@@ -261,7 +261,7 @@ test_that("Treatment_relevelled reflects Treatment", {expect_true(all(catData_pu
 test_that("MismTreat_squared equals MismTreat_noNeg squared", {expect_true(all(catData_pupa$MismTreat_squared == catData_pupa$MismTreat_noNeg^2))})
 test_that("Caterpillar ID are unique", {expect_equal(length(unique(catData_pupa$CaterpillarID)), nrow(catData_pupa))})
 
-head(catData_pupa) # 346 individuals survived until pupation
+head(catData_pupa)
 
 # Overall survival probability
 nrow(catData_pupa)/nrow(catData)*100 # ~35%
@@ -321,7 +321,7 @@ summary(lmPupa_final)
 lmPupa_res <- summary(lmPupa_final)$coefficients %>% as.data.frame
 
 # write.csv(lmPupa_res, file="_results/output_PupaWeight_lmer.csv", row.names=T)
-# write.csv(rbind(anovaSurv_step1, anovaSurv_step2, anova3), file="_results/anova_PupaWeight_lmer.csv", row.names=T)
+# write.csv(rbind(anovaPupa_step1, anovaPupa_step2, anova3), file="_results/anova_PupaWeight_lmer.csv", row.names=T)
 
 # Get predictions ####
 lmPupa_pred <- catData_pupa[!duplicated(catData_pupa[,c("MotherID", "Treatment_relevelled")]),] # each replicate assigned same prediction, so remove duplicates
@@ -389,7 +389,7 @@ curve$rel <- curve$pred/filter(curve, MismTreat==MismTreat_FitPeak)$pred # expre
 RelFit$rel <- RelFit$Fit/mean(filter(RelFit, MismTreat==2)$Fit)
 
 RelFit_means <- Rmisc::summarySE(RelFit, measurevar="rel", groupvars=c("MismTreat"))
-#RelFit_means$samplesize <- aggregate(MotherID~MismTreat, data=catData_pupa, length)$MotherID # number of caterpillars curve is based on
+#RelFit_means$samplesize <- aggregate(MotherID~MismTreat, data=catData_pupa, length)$MotherID # number of caterpillars curve is based on pupa data
 RelFit_means$samplesize <- aggregate(MotherID~MismTreat, data=catData_surv, length)$MotherID # number of caterpillars curve is based on = all
 RelFit_means$curve <- curve$rel
 head(RelFit_means)
