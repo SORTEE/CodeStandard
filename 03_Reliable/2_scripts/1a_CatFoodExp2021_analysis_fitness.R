@@ -22,17 +22,43 @@ library(cowplot)
 theme_set(theme_cowplot()) #white background instead of grey -> don't load if want grey grid
 library(lme4)
 library(lmerTest)
-
+library(testthat)
 
 # Load data ####
 #-----------------------------------
 catDataRaw <- read.csv("1_data/CatFood2021_deposit.csv")
-head(catDataRaw)
+test_that("raw data table has correct class and dimensions", {
+  expect_s3_class(catDataRaw, "data.frame")
+  expect_equal(ncol(catDataRaw), 19)
+  expect_equal(nrow(catDataRaw), 976)
+})
+test_that("variables types are correct", {
+  expect_type(catDataRaw$ExperimentName, "character")
+  expect_type(catDataRaw$YearCatch, "integer")
+  expect_type(catDataRaw$YearHatch, "integer")
+  expect_type(catDataRaw$TubeID, "integer")
+  expect_type(catDataRaw$AreaShortName, "character")
+  expect_type(catDataRaw$Site, "integer")
+  expect_type(catDataRaw$Tree, "integer")
+  expect_type(catDataRaw$NovemberDate, "integer")
+  expect_type(catDataRaw$ClutchID, "integer")
+  expect_type(catDataRaw$CaterpillarID, "integer")
+  expect_type(catDataRaw$Treatment, "character")
+  expect_type(catDataRaw$HatchAprilDay, "integer")
+  expect_type(catDataRaw$DeadAprilDay, "integer")
+  expect_type(catDataRaw$PupationAprilDay, "integer")
+  expect_type(catDataRaw$PupaWeight_ingrams, "double")
+  expect_type(catDataRaw$AdultNovDate, "integer")
+  expect_type(catDataRaw$AdultWeight_ingrams, "double")
+  expect_type(catDataRaw$Sex, "character")
+  expect_type(catDataRaw$Remarks, "character")
+})
 
 # renaming TubeID as MotherID to match the terminology used in the Statistical section of the paper
 catData <- rename(catDataRaw, MotherID = TubeID)
 
-length(unique(catData$MotherID)) # should be 22 mothers
+test_that("22 different mothers", {expect_equal(length(unique(catData$MotherID)), 22)})
+test_that("15 treatment values", {expect_equal(length(unique(catData$Treatment)), 15)})
 table(catData$Treatment) # photoperiod and mismatch treatment coded in one variable
 
 
@@ -61,12 +87,31 @@ catData_surv <- catData %>% mutate(PhotoTreat=gsub("(\\w+)Day.+","\\1",Treatment
   mutate(MismTreat_noNeg=MismTreat-min(MismTreat)+1, # Transformed so that lowest value is 1, to be able to fit the squared term
          MismTreat_squared=(MismTreat-min(MismTreat)+1)^2) # squared term to add in model
 # Vidisha coded it as TimeOfEvent=DeadAprilDay or PupationAprilDay, with event=Died or Survived
+test_that("survival data table has correct class and dimensions", {
+  expect_s3_class(catData_surv, "data.frame")
+  expect_equal(ncol(catData_surv), 12)
+  expect_equal(nrow(catData_surv), 976)
+})
+test_that("variables types are correct", {
+  expect_s3_class(catData_surv$MotherID, "factor")
+  expect_s3_class(catData_surv$Treatment, "factor")
+  expect_s3_class(catData_surv$PhotoTreat, "factor")
+  expect_type(catData_surv$MismTreat, "double")
+  expect_type(catData_surv$CaterpillarID, "integer")
+  expect_type(catData_surv$Info, "character")
+  expect_type(catData_surv$TimeOfEvent, "integer")
+  expect_type(catData_surv$Event, "double")
+  expect_s3_class(catData_surv$MismTreat_factor, "factor")
+  expect_s3_class(catData_surv$Treatment_relevelled, "factor")
+  expect_type(catData_surv$MismTreat_noNeg, "double")
+  expect_type(catData_surv$MismTreat_squared, "double")
+})
+
+test_that("Treatment_relevelled reflects Treatment", {expect_true(all(catData_surv$Treatment_relevelled == catData_surv$Treatment))})
+test_that("MismTreat_squared equals MismTreat_noNeg squared", {expect_true(all(catData_surv$MismTreat_squared == catData_surv$MismTreat_noNeg^2))})
+test_that("Caterpillar ID are unique", {expect_equal(length(unique(catData_surv$CaterpillarID)), nrow(catData_surv))})
+
 head(catData_surv)
-str(catData_surv)
-table(catData_surv$MismTreat_squared)
-
-length(unique(catData_surv$CaterpillarID)) # should be 976
-
 
 #-----------------------------------
 # Survival analysis ####
@@ -79,8 +124,6 @@ table(catData_surv$TimeOfEvent)
 table(catData_surv$Event) # this variable corresponds to "survival" as defined in the paper (e.g., the response variable in the first binomial mixed-effect model)
 
 # Visualize survival probabilities ####
-head(catData_surv)
-
 surv_probs <- aggregate(Event~MismTreat + PhotoTreat + MotherID, catData_surv, sum) # per mother
 surv_probs$samplesize <- aggregate(Info~MismTreat + PhotoTreat + MotherID, catData_surv, length)$Info
 surv_probs$probs <- 100 - (surv_probs$Event/surv_probs$samplesize*100) # event = death
@@ -159,9 +202,35 @@ catData_pupa <- catData %>% mutate(PhotoTreat=gsub("(\\w+)Day.+","\\1",Treatment
          MismTreat=as.numeric(gsub("Day(.+)","\\1",MismTreat))) %>%
   mutate(MismTreat_noNeg=MismTreat-min(MismTreat)+1, # Transformed so that lowest value is 1, to be able to fit the squared term
          MismTreat_squared=(MismTreat-min(MismTreat)+1)^2) # squared term to add in model
-head(catData_pupa) # 346 individuals survived until pupation
-nrow(catData_pupa)/nrow(catData)*100 # ~35%
 
+test_that("pupa data table has correct class and dimensions", {
+  expect_s3_class(catData_pupa, "data.frame")
+  expect_equal(ncol(catData_pupa), 12)
+  expect_equal(nrow(catData_pupa), 346) # 346 individuals survived until pupation
+})
+test_that("variables types are correct", {
+  expect_type(catData_pupa$ExperimentName, "character")
+  expect_s3_class(catData_pupa$MotherID, "factor")
+  expect_s3_class(catData_pupa$Treatment, "factor")
+  expect_s3_class(catData_pupa$PhotoTreat, "factor")
+  expect_type(catData_pupa$MismTreat, "double")
+  expect_type(catData_pupa$CaterpillarID, "integer")
+  expect_type(catData_pupa$PupationAprilDay, "integer")
+  expect_type(catData_pupa$PupaWeight, "double")
+  expect_s3_class(catData_pupa$MismTreat_factor, "factor")
+  expect_s3_class(catData_pupa$Treatment_relevelled, "factor")
+  expect_type(catData_pupa$MismTreat_noNeg, "double")
+  expect_type(catData_pupa$MismTreat_squared, "double")
+})
+
+test_that("Treatment_relevelled reflects Treatment", {expect_true(all(catData_pupa$Treatment_relevelled == catData_pupa$Treatment))})
+test_that("MismTreat_squared equals MismTreat_noNeg squared", {expect_true(all(catData_pupa$MismTreat_squared == catData_pupa$MismTreat_noNeg^2))})
+test_that("Caterpillar ID are unique", {expect_equal(length(unique(catData_pupa$CaterpillarID)), nrow(catData_pupa))})
+
+head(catData_pupa) # 346 individuals survived until pupation
+
+# Overall survival probability
+nrow(catData_pupa)/nrow(catData)*100 # ~35%
 
 # Visualize ####
 weight <- Rmisc::summarySE(catData_pupa, measurevar="PupaWeight", groupvars=c("MismTreat", "PhotoTreat"))
@@ -252,21 +321,24 @@ predSurv_fitness$survpred <- (1-predSurv_fitness$pred)
 predPupa_fitness <- catData_pupa[!duplicated(catData_pupa[,c("MotherID", "MismTreat_factor")]),] # each replicate assigned same prediction, so remove duplicates
 predPupa_fitness$pred <- predict(modelPupa_fitness, newdata=predPupa_fitness, type="response")
 
-head(predSurv_fitness) # pred = probability of dying, survpred=1-pred, 220 observations = 22 mothers * 10 MismTreat groups
-head(predPupa_fitness) # pred=predicted weight from lmer, only 154 observations
+test_that("220 observations = 22 mothers * 10 MismTreat groups", {expect_equal(nrow(predSurv_fitness), 220)})
+head(predSurv_fitness) # pred = probability of dying, survpred=1-pred, 
+test_that("154 predicted weights", {expect_equal(nrow(predPupa_fitness), 154)})
+head(predPupa_fitness) # pred=predicted weight from lmer
 
 
 # Fit curve to absolute fitness ####
 #-----------------------------------
 RelFit <- merge(predSurv_fitness[,c("MotherID", "MismTreat", "survpred")], predPupa_fitness[,c("MotherID", "MismTreat", "pred")], by=c("MotherID", "MismTreat"), all=T)
 colnames(RelFit)[c(3,4)] <- c("survpred", "pupwpred")
-RelFit$Fit <- RelFit$survpred*RelFit$pupwpred # multiply absolute values
-head(RelFit) # can only do for 154 observations, clutches with >=1 caterpillar surviving until pupation
-table(RelFit$MismTreat, is.na(RelFit$Fit)) # for the other clutches, fitness = 0
-RelFit$Fit2 <- ifelse(is.na(RelFit$Fit)==T, 0, RelFit$Fit)
+RelFit$RelFit_NonNul <- RelFit$survpred*RelFit$pupwpred # multiply absolute values
+test_that("154 clutches with >=1 caterpillar surviving until pupation", {
+  expect_equal(sum(!is.na(RelFit$pupwpred)),154)})
+# for the other clutches, fitness = 0
+RelFit$Fit <- ifelse(is.na(RelFit$RelFit_NonNul)==T, 0, RelFit$RelFit_NonNul)
 
 # loess model to describe the curve ####
-loess_mod <- loess(Fit2~ -1 + MismTreat,  data=RelFit) 
+loess_mod <- loess(Fit~ -1 + MismTreat,  data=RelFit) 
 summary(loess_mod)
 
 curve <- RelFit[!duplicated(RelFit[,c("MismTreat")]),] %>% select(MismTreat)
@@ -275,7 +347,7 @@ curve <- arrange(curve, MismTreat)
 MismTreat_FitPeak <- curve$MismTreat[curve$pred == max(curve$pred)] # peak at Day2
 curve$rel <- curve$pred/filter(curve, MismTreat==MismTreat_FitPeak)$pred # expressive relative to peak
 
-RelFit$rel <- RelFit$Fit2/mean(filter(RelFit, MismTreat==2)$Fit2)
+RelFit$rel <- RelFit$Fit/mean(filter(RelFit, MismTreat==2)$Fit)
 
 RelFit_means <- Rmisc::summarySE(RelFit, measurevar="rel", groupvars=c("MismTreat"))
 #RelFit_means$samplesize <- aggregate(MotherID~MismTreat, data=catData_pupa, length)$MotherID # number of caterpillars curve is based on
