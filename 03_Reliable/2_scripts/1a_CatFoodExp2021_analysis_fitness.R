@@ -58,8 +58,8 @@ catData_surv <- catData %>% mutate(PhotoTreat=gsub("(\\w+)Day.+","\\1",Treatment
                                                          "ChangDay+5",  "ConstDay-4", "ConstDay-2", "ConstDay0", "ConstDay+2", "ConstDay+4")), 
          MismTreat_factor=factor(MismTreat, levels=c("Day-4", "Day-3", "Day-2", "Day-1", "Day0", "Day+1", "Day+2", "Day+3", "Day+4", "Day+5")),
          MismTreat=as.numeric(gsub("Day(.+)","\\1",MismTreat))) %>%
-  mutate(MismTreat_noNeg=MismTreat+5, # no negatives to be able to fit squared term
-         MismTreat_squared=(MismTreat+5)^2) # squared term to add in model
+  mutate(MismTreat_noNeg=MismTreat-min(MismTreat)+1, # Transformed so that lowest value is 1, to be able to fit the squared term
+         MismTreat_squared=(MismTreat-min(MismTreat)+1)^2) # squared term to add in model
 # Vidisha coded it as TimeOfEvent=DeadAprilDay or PupationAprilDay, with event=Died or Survived
 head(catData_surv)
 str(catData_surv)
@@ -129,8 +129,9 @@ glmSurv_res <- summary(glmSurv_final)$coefficients %>% as.data.frame
 glmSurv_pred <- catData_surv[!duplicated(catData_surv[,c("MotherID", "Treatment_relevelled")]),] # each replicate assigned same prediction, so remove duplicates
 glmSurv_pred$pred <- predict(glmSurv_final, newdata=glmSurv_pred, type="response") # predictions are probability of dying now
 glmSurv_pred$survprob <- (1-glmSurv_pred$pred)
-aggregate(survprob~MismTreat, data=glmSurv_pred, mean) # peak at Day2
-glmSurv_pred$rel <- glmSurv_pred$survprob/mean(filter(glmSurv_pred, MismTreat==1)$survprob) # expressive relative to peak
+SurvByMismTreat <- aggregate(survprob~MismTreat, data=glmSurv_pred, mean)
+MismTreat_SurvPeak <- SurvByMismTreat$MismTreat[SurvByMismTreat$survprob == max(SurvByMismTreat$survprob)] # peak at Day2
+glmSurv_pred$rel <- glmSurv_pred$survprob/mean(filter(glmSurv_pred, MismTreat==MismTreat_SurvPeak)$survprob) # expressive relative to peak
 head(glmSurv_pred)
 
 # Visualize predictions ####
@@ -156,8 +157,8 @@ catData_pupa <- catData %>% mutate(PhotoTreat=gsub("(\\w+)Day.+","\\1",Treatment
                                                          "ChangDay+5",  "ConstDay-4", "ConstDay-2", "ConstDay0", "ConstDay+2", "ConstDay+4")), 
          MismTreat_factor=factor(MismTreat, levels=c("Day-4", "Day-3", "Day-2", "Day-1", "Day0", "Day+1", "Day+2", "Day+3", "Day+4", "Day+5")),
          MismTreat=as.numeric(gsub("Day(.+)","\\1",MismTreat))) %>%
-  mutate(MismTreat_noNeg=MismTreat+5, # no negatives
-         MismTreat_squared=(MismTreat+5)^2) # squared term to add in model
+  mutate(MismTreat_noNeg=MismTreat-min(MismTreat)+1, # Transformed so that lowest value is 1, to be able to fit the squared term
+         MismTreat_squared=(MismTreat-min(MismTreat)+1)^2) # squared term to add in model
 head(catData_pupa) # 346 individuals survived until pupation
 nrow(catData_pupa)/nrow(catData)*100 # ~35%
 
@@ -271,8 +272,8 @@ summary(loess_mod)
 curve <- RelFit[!duplicated(RelFit[,c("MismTreat")]),] %>% select(MismTreat)
 curve$pred <- predict(loess_mod, newdata=curve)
 curve <- arrange(curve, MismTreat)
-curve # peak at day2
-curve$rel <- curve$pred/filter(curve, MismTreat==2)$pred # expressive relative to peak
+MismTreat_FitPeak <- curve$MismTreat[curve$pred == max(curve$pred)] # peak at Day2
+curve$rel <- curve$pred/filter(curve, MismTreat==MismTreat_FitPeak)$pred # expressive relative to peak
 
 RelFit$rel <- RelFit$Fit2/mean(filter(RelFit, MismTreat==2)$Fit2)
 
@@ -292,7 +293,7 @@ p_relfit <- ggplot(data=RelFit, aes(x=MismTreat, y=rel)) +
   geom_text(data=RelFit_means,aes(label=samplesize, y=rel+0.12), col="black", size=5, fontface="bold")+ # number of caterpillars
   geom_hline(yintercept=1, linetype="dashed")+
   labs(y="Relative fitness", x="Mismatch with oak budburst date (days)")+
-  scale_y_continuous(lim=c(0,1.21), breaks=seq(0,1.6, by=0.2))+ scale_x_continuous(breaks=seq(-4,5, by=1))+ #lim=c(-0.1,1.3)
+  scale_y_continuous(lim=c(0, max(RelFit$rel)), breaks=seq(0,1.6, by=0.2))+ scale_x_continuous(breaks=seq(-4,5, by=1))+ #lim=c(-0.1,1.3)
   theme(legend.position="none")+
   theme(axis.title.y=element_text(size=18, vjust=2), axis.title.x=element_text(size=18, vjust=-0.5),
         axis.text=element_text(size=16), legend.text = element_text(size=16), legend.title=element_text(size=17))
