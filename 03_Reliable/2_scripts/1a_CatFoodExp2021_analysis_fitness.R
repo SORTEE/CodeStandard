@@ -16,15 +16,15 @@ renv::restore()
 
 # Load packages
 #-----------------------------------
-library(Rmisc)
-library(tidyverse)
-library(cowplot)
-theme_set(theme_cowplot()) #white background instead of grey -> don't load if want grey grid
-library(lme4)
-library(lmerTest)
+library(Rmisc) #should be loaded first
+library(tidyverse)# Masked function(s): various functions from package plyr and filter and lag from package stats.
+library(cowplot) # Masked function(s): stamp from package lubridate
+theme_set(theme_cowplot()) # white background instead of grey -> don't load if want grey grid
+library(lme4) # Masked function(s): expand, pack, and unpack from package tidyr
+library(lmerTest) # Masked function(s): lmer from package lme4 and step from package stats.
 library(performance)
 library(DHARMa)
-library(testthat)
+library(testthat) # Masked function(s): matches from package dplyr, is_null from package purrr, edition_get and local_edition from package readr, matches from package tidyr.
 
 # Load data ####
 #-----------------------------------
@@ -95,7 +95,7 @@ table(catData$Treatment) # photoperiod and mismatch treatment coded in one varia
 
 # N per Area
 table(catData[!duplicated(catData$MotherID), "AreaShortName"])
-
+# should match the counts given in section 2.b Phenological mismatch experiment
 
 #---------------------------------------------------------------------------------------------------------------------------
 # Fitness curve ####
@@ -139,7 +139,7 @@ test_that("Treatment_relevelled reflects Treatment", {expect_true(all(catData_su
 test_that("MismTreat_squared equals MismTreat_noNeg squared", {expect_true(all(catData_surv$MismTreat_squared == catData_surv$MismTreat_noNeg^2))})
 test_that("Caterpillar ID are unique", {expect_equal(length(unique(catData_surv$CaterpillarID)), nrow(catData_surv))})
 
-head(catData_surv)
+head(catData_surv) # should print the first 6 rows and the 10 columns of a tibble
 
 #-----------------------------------
 # Survival analysis ####
@@ -268,6 +268,7 @@ nrow(catData_pupa)/nrow(catData)*100 # ~35%
 
 # Visualize ####
 weight <- Rmisc::summarySE(catData_pupa, measurevar="PupaWeight", groupvars=c("MismTreat", "PhotoTreat"))
+# Warning should appear: In the Day-4 mismatch treatment, only 1 larva reached pupation for each photoperiod treatment, which produces NA for sd and se and NaN for confidence interval.
 weight$pos <- ifelse(is.na(weight$se)==T, 0, weight$se) # position of sample size labels
 weight
 
@@ -329,6 +330,7 @@ head(lmPupa_pred)
 
 # Visualize predictions ####
 pred_pupa <- Rmisc::summarySE(lmPupa_pred, measurevar="pred", groupvars=c("MismTreat", "PhotoTreat")) # significant effect of photoperiod, so show separate means
+# Warning should appear: In the Day-4 mismatch treatment, only 1 larva reached pupation for each photoperiod treatment, which produces NA for sd and se and NaN for confidence interval.
 pred_pupa$samplesize <- weight$N
 pred_pupa$pos <- ifelse(is.na(pred_pupa$se)==T, 0, pred_pupa$se) # position of sample size labels
 
