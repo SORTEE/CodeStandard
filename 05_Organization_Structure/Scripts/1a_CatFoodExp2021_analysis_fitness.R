@@ -11,7 +11,9 @@
 
 # Open R project in main folder
 
-# Restore library
+
+# Load R environment --------------------------------------------------------------------------
+# This restores the versions of packages used in the original analysis.
 renv::restore()
 
 
