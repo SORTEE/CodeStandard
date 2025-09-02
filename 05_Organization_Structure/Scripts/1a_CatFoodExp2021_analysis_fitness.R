@@ -26,7 +26,7 @@ library(Rmisc)
 
 # Load data ####
 #-----------------------------------
-d <- read.csv("1_data/CatFood2021_deposit.csv")
+d <- read.csv("Data/CatFood2021_deposit.csv")
 head(d)
 
 # renaming TubeID as MotherID to match the terminology used in the Statistical section of the paper
