@@ -14,38 +14,32 @@
 # Restore library
 renv::restore()
 
-# Load packages
-#-----------------------------------
+
+# Load packages -------------------------------------------------------------------------------
 library(tidyverse)
 library(cowplot)
-theme_set(theme_cowplot()) #white background instead of grey -> don't load if want grey grid
 library(lme4)
 library(lmerTest)
 library(Rmisc)
 
-
-# Load data ####
-#-----------------------------------
+# Load data -----------------------------------------------------------------------------------
 d <- read.csv("Data/CatFood2021_deposit.csv")
 head(d)
 
 # renaming TubeID as MotherID to match the terminology used in the Statistical section of the paper
 d <- rename(d, MotherID = TubeID)
 
+
+# Data summary -------------------------------------------------------------------------------
+
 length(unique(d$MotherID)) # should be 22 mothers
 table(d$Treatment) # photoperiod and mismatch treatment coded in one variable
-
-
-# Descriptives
-#-----------------------------------
 
 # N per Area
 table(d[!duplicated(d$MotherID), "AreaShortName"])
 
 
-#---------------------------------------------------------------------------------------------------------------------------
-# Fitness curve ####
-#----------------------------------
+# Fitness curve -------------------------------------------------------------------------------
 # RQ1: What are the fitness consequences of day to day timing (a)synchrony with budburst? ####
 
 # Survival data ####
@@ -68,9 +62,8 @@ table(d_surv$MismTreat2)
 length(unique(d_surv$CaterpillarID)) # should be 976
 
 
-#-----------------------------------
-# Survival analysis ####
-#-----------------------------------
+# Survival analysis ---------------------------------------------------------------------------
+
 levels(d_surv$Treatment)
 levels(d_surv$PhotoTreat)
 levels(d_surv$MismTreatf) # as factor or not? Marcel thinks not ####
@@ -99,13 +92,15 @@ raw_surv <- ggplot(data=surv_avg, aes(x=MismTreat, y=probs))+
   labs(y="Survival (%)", x="Mismatch with oak budburst date (days)")+
   scale_y_continuous(breaks=seq(0,100, by=10))+ scale_x_continuous(breaks=seq(-4, 5, by=1))+
   theme(axis.title.y=element_text(size=18, vjust=2), axis.title.x=element_text(size=18, vjust=-0.5),
-        axis.text=element_text(size=16), legend.text = element_text(size=16), legend.title=element_text(size=17))
+        axis.text=element_text(size=16), legend.text = element_text(size=16), legend.title=element_text(size=17)) +
+  theme_cowplot()
 raw_surv 
 # ggsave(filename="_results/Survival_raw.png", plot=raw_surv , device="png", width=200, height=150, units="mm", dpi="print")
 
 
-# Fit binomial model ####
-#-----------------------------------
+
+# Fit binomial model --------------------------------------------------------------------------
+
 head(d_surv) # test if probability of survival differs between treatments
 
 glm1 <- glmer(Event ~ (MismTreat1 + MismTreat2)*PhotoTreat + (1|MotherID), family=binomial, data=d_surv,
@@ -146,9 +141,7 @@ p_surv
 rm(anova1, anova2, glm_res, glm1, glm2, pred, surv_probs, surv_avg, raw_surv) #cleanup
 
 
-#-----------------------------------
-# Pupation weight analysis ####
-#-----------------------------------
+# Pupation weight analysis --------------------------------------------------------------------
 head(d)
 
 d_pupa <- d %>% mutate(PhotoTreat=gsub("(\\w+)Day.+","\\1",Treatment), MismTreat=gsub("\\w+(Day.+)","\\1",Treatment), PupaWeight=PupaWeight_ingrams*1000) %>%
@@ -182,13 +175,15 @@ raw_weight <- ggplot(data=weight, aes(x=MismTreat, y=PupaWeight, col=PhotoTreat,
   labs(y="Weight at pupation (mg)", x="Mismatch with oak budburst date (days)")+
   scale_y_continuous(breaks=seq(15,75, by=10))+ scale_x_continuous(breaks=seq(-4, 5, by=1))+
   theme(axis.title.y=element_text(size=18, vjust=2), axis.title.x=element_text(size=18, vjust=-0.5),
-        axis.text=element_text(size=16), legend.text = element_text(size=16), legend.title=element_text(size=17))
+        axis.text=element_text(size=16), legend.text = element_text(size=16), legend.title=element_text(size=17)) +
+  theme_cowplot()
 raw_weight  
 # ggsave(filename="_results/PupWeight_raw.png", plot=raw_weight , device="png", width=200, height=150, units="mm", dpi="print")
 
 
-# Fit linear mixed model ####
-#-----------------------------------
+
+# Linear mixed model --------------------------------------------------------------------------
+
 lm1 <- lmer(PupaWeight ~ (MismTreat1 + MismTreat2)*PhotoTreat + (1|MotherID), data=d_pupa)
 anova1 <- anova(lm1) %>% as.data.frame() # interaction not significant
 anova1$mod <- "lm1"
@@ -238,9 +233,9 @@ p_weight
 
 
 
-#--------------------------------------------
-# Get fitness curve ####
-#--------------------------------------------
+
+# Fitness curve -------------------------------------------------------------------------------
+
 
 # Don't care about PhotoTreat effect, drop from models ####
 glm_fit <- glmer(Event ~ MismTreat1 + MismTreat2 + (1 | MotherID), family="binomial", data=d_surv)
@@ -298,11 +293,12 @@ p_relfit <- ggplot(data=RelFit, aes(x=MismTreat, y=rel)) +
   scale_y_continuous(lim=c(0,1.21), breaks=seq(0,1.6, by=0.2))+ scale_x_continuous(breaks=seq(-4,5, by=1))+ #lim=c(-0.1,1.3)
   theme(legend.position="none")+
   theme(axis.title.y=element_text(size=18, vjust=2), axis.title.x=element_text(size=18, vjust=-0.5),
-        axis.text=element_text(size=16), legend.text = element_text(size=16), legend.title=element_text(size=17))
+        axis.text=element_text(size=16), legend.text = element_text(size=16), legend.title=element_text(size=17)) +
+  theme_cowplot()
 p_relfit
 # ggsave(filename="_results/FitnessCurve_rev.png", plot=p_relfit, device="png", width=200, height=150, units="mm", dpi="print")
 
 
-
+# Session info --------------------------------------------------------------------------------
 
 sessionInfo() %>% capture.output(file="_src/env_CatFoodExp2021_analysis.txt")
