@@ -47,17 +47,17 @@ table(cat_food_data[!duplicated(cat_food_data$MotherID), "AreaShortName"])
 # RQ1: What are the fitness consequences of day to day timing (a)synchrony with budburst? ####
 
 # Survival data ####
-survival_data <- cat_food_data %>% 
+survival_data <- cat_food_data |> 
   mutate(PhotoTreat=gsub("(\\w+)Day.+","\\1",Treatment), 
-         MismTreat=gsub("\\w+(Day.+)","\\1",Treatment)) %>% 
-  select(MotherID, Treatment, PhotoTreat, MismTreat, CaterpillarID, DeadAprilDay, PupationAprilDay) %>%
-  pivot_longer(cols=c(DeadAprilDay, PupationAprilDay), names_to="Info", values_to="TimeOfEvent") %>%
-  filter(!is.na(TimeOfEvent)) %>%
-  mutate(Event=ifelse(Info=="DeadAprilDay", 1, 0), Treatment=as.factor(Treatment), PhotoTreat=as.factor(ifelse(PhotoTreat=="Chang", "Changing", "Constant")), MismTreatf=as.factor(MismTreat), MotherID=as.factor(MotherID)) %>%
+         MismTreat=gsub("\\w+(Day.+)","\\1",Treatment)) |> 
+  select(MotherID, Treatment, PhotoTreat, MismTreat, CaterpillarID, DeadAprilDay, PupationAprilDay) |>
+  pivot_longer(cols=c(DeadAprilDay, PupationAprilDay), names_to="Info", values_to="TimeOfEvent") |>
+  filter(!is.na(TimeOfEvent)) |>
+  mutate(Event=ifelse(Info=="DeadAprilDay", 1, 0), Treatment=as.factor(Treatment), PhotoTreat=as.factor(ifelse(PhotoTreat=="Chang", "Changing", "Constant")), MismTreatf=as.factor(MismTreat), MotherID=as.factor(MotherID)) |>
   mutate(Treatment=factor(Treatment, levels=c("ChangDay-4", "ChangDay-3", "ChangDay-2", "ChangDay-1", "ChangDay0", "ChangDay+1", "ChangDay+2", "ChangDay+3", "ChangDay+4",
                                               "ChangDay+5",  "ConstDay-4", "ConstDay-2", "ConstDay0", "ConstDay+2", "ConstDay+4")), 
          MismTreatf=factor(MismTreat, levels=c("Day-4", "Day-3", "Day-2", "Day-1", "Day0", "Day+1", "Day+2", "Day+3", "Day+4", "Day+5")),
-         MismTreat=as.numeric(gsub("Day(.+)","\\1",MismTreat))) %>%
+         MismTreat=as.numeric(gsub("Day(.+)","\\1",MismTreat))) |>
   mutate(MismTreat1=MismTreat+5, # no negatives to be able to fit squared term
          MismTreat2=(MismTreat+5)^2) # squared term to add in model
 # Vidisha coded it as TimeOfEvent=DeadAprilDay or PupationAprilDay, with event=Died or Survived
@@ -111,17 +111,17 @@ head(survival_data) # test if probability of survival differs between treatments
 
 glm1 <- glmer(Event ~ (MismTreat1 + MismTreat2)*PhotoTreat + (1|MotherID), family=binomial, data=d_surv,
               na.action="na.fail", control=glmerControl(calc.derivs=F)) # helps convergence
-anova1 <- drop1(glm1,test="Chi") %>% as.data.frame # interaction not significant; the use of Chi-square test to determine statistical significance should be explicitly mention in the paper
+anova1 <- drop1(glm1,test="Chi") |> as.data.frame # interaction not significant; the use of Chi-square test to determine statistical significance should be explicitly mention in the paper
 anova1$mod <- "glm1"
 
 glm2 <- update(glm1, ~ . -MismTreat1:PhotoTreat - MismTreat2:PhotoTreat) # simplify model
-anova2 <- drop1(glm2,test="Chi") %>% as.data.frame #no effect of PhotoTreatment, but effect of MismTreat and MismTreat^2
+anova2 <- drop1(glm2,test="Chi") |> as.data.frame #no effect of PhotoTreatment, but effect of MismTreat and MismTreat^2
 anova2$mod <- "glm2"
 
 # Final model ####
 glm_final <- glm2
 summary(glm_final)# Estimates are log odds
-glm_res <- summary(glm_final)$coefficients %>% as.data.frame
+glm_res <- summary(glm_final)$coefficients |> as.data.frame
 
 # write.csv(glm_res, file="_results/output_Surv_glmer.csv", row.names=T)
 # write.csv(rbind(anova1, anova2), file="_results/anova_Surv_glmer.csv", row.names=T)
@@ -150,14 +150,14 @@ rm(anova1, anova2, glm_res, glm1, glm2, pred, surv_probs, surv_avg, raw_surv) #c
 # Pupation weight analysis --------------------------------------------------------------------
 head(cat_food_data)
 
-pupa_data <- cat_food_data %>% mutate(PhotoTreat=gsub("(\\w+)Day.+","\\1",Treatment), MismTreat=gsub("\\w+(Day.+)","\\1",Treatment), PupaWeight=PupaWeight_ingrams*1000) %>%
-  select(ExperimentName, MotherID, Treatment, PhotoTreat, MismTreat, CaterpillarID, PupationAprilDay, PupaWeight) %>%
-  filter(!is.na(PupationAprilDay)) %>%
-  mutate(Treatment=as.factor(Treatment), PhotoTreat=as.factor(ifelse(PhotoTreat=="Chang", "Changing", "Constant")), MismTreatf=as.factor(MismTreat), MotherID=as.factor(MotherID)) %>%
+pupa_data <- cat_food_data |> mutate(PhotoTreat=gsub("(\\w+)Day.+","\\1",Treatment), MismTreat=gsub("\\w+(Day.+)","\\1",Treatment), PupaWeight=PupaWeight_ingrams*1000) |>
+  select(ExperimentName, MotherID, Treatment, PhotoTreat, MismTreat, CaterpillarID, PupationAprilDay, PupaWeight) |>
+  filter(!is.na(PupationAprilDay)) |>
+  mutate(Treatment=as.factor(Treatment), PhotoTreat=as.factor(ifelse(PhotoTreat=="Chang", "Changing", "Constant")), MismTreatf=as.factor(MismTreat), MotherID=as.factor(MotherID)) |>
   mutate(Treatment=factor(Treatment, levels=c("ChangDay-4", "ChangDay-3", "ChangDay-2", "ChangDay-1", "ChangDay0", "ChangDay+1", "ChangDay+2", "ChangDay+3", "ChangDay+4",
                                               "ChangDay+5",  "ConstDay-4", "ConstDay-2", "ConstDay0", "ConstDay+2", "ConstDay+4")), 
          MismTreatf=factor(MismTreat, levels=c("Day-4", "Day-3", "Day-2", "Day-1", "Day0", "Day+1", "Day+2", "Day+3", "Day+4", "Day+5")),
-         MismTreat=as.numeric(gsub("Day(.+)","\\1",MismTreat))) %>%
+         MismTreat=as.numeric(gsub("Day(.+)","\\1",MismTreat))) |>
   mutate(MismTreat1=MismTreat+5, # no negatives
          MismTreat2=(MismTreat+5)^2) # squared term to add in model
 head(pupa_data) # 346 individuals survived until pupation
@@ -191,15 +191,15 @@ raw_weight_figure
 # Linear mixed model --------------------------------------------------------------------------
 
 lm1 <- lmer(PupaWeight ~ (MismTreat1 + MismTreat2)*PhotoTreat + (1|MotherID), data=pupa_data)
-anova1 <- anova(lm1) %>% as.data.frame() # interaction not significant
+anova1 <- anova(lm1) |> as.data.frame() # interaction not significant
 anova1$mod <- "lm1"
 
 lm2 <- update(lm1, ~ . - MismTreat1:PhotoTreat - MismTreat2:PhotoTreat) # simplify model
-anova2 <- anova(lm2) %>% as.data.frame() # Squared mismatch not significant
+anova2 <- anova(lm2) |> as.data.frame() # Squared mismatch not significant
 anova2$mod <- "lm2"
 
 lm3 <- update(lm2, ~ . - MismTreat2) # simplify model
-anova3 <- anova(lm3) %>% as.data.frame() # PhotoTreat and MismTreat significant
+anova3 <- anova(lm3) |> as.data.frame() # PhotoTreat and MismTreat significant
 anova3$mod <- "lm3"
 
 # Still there if exclude first time point with low sample size?
@@ -210,7 +210,7 @@ anova(lm4) # yes
 # Final model ####
 lm_final <- lm3
 summary(lm_final)
-lm_res <- summary(lm_final)$coefficients %>% as.data.frame
+lm_res <- summary(lm_final)$coefficients |> as.data.frame
 
 plot(lm_final) #equal variance? ok
 qqnorm(resid(lm_final)) #normally distributed? ok
@@ -272,7 +272,7 @@ RelFit$Fit2 <- ifelse(is.na(RelFit$Fit)==T, 0, RelFit$Fit)
 loess_mod <- loess(Fit2~ -1 + MismTreat,  data=RelFit) 
 summary(loess_mod)
 
-curve <- relative_fit[!duplicated(RelFit[,c("MismTreat")]),] %>% select(MismTreat)
+curve <- relative_fit[!duplicated(RelFit[,c("MismTreat")]),] |> select(MismTreat)
 curve$pred <- predict(loess_mod, newdata=curve)
 curve <- arrange(curve, MismTreat)
 curve # peak at day2
@@ -307,4 +307,4 @@ relative_fit_plot
 
 # Session info --------------------------------------------------------------------------------
 
-sessionInfo() %>% capture.output(file="_src/env_CatFoodExp2021_analysis.txt")
+sessionInfo() |> capture.output(file="_src/env_CatFoodExp2021_analysis.txt")
