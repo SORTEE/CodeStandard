@@ -1,15 +1,15 @@
-# Analysis of Phenological mismatch experiment 2021 
-# Manipulated timing of egg hatching of eggs from wild Mothers caught in 2020
-# Either hatching on day of budburst (Day0), before (Day-4 to -1), or after (Day+1 to +5)
-# Disentangle effects of photoperiod and food quality: photoperiod treatment (changing or constant)
+## Analysis of Phenological mismatch experiment 2021 
+#
+# In this study, caterpillar eggs were taken from wild mothers caught in 2020. Timing of egg hatching
+# was manipulated, with eggs either hatching on the day of budburst (Day0), before (Day-4 to -1),
+# or after (Day+1 to +5). The photoperiod was also manipulated, with either a constant or changing
+# photoperiod.
+#
+# To run this down, download the dataset 'CatFood2021_deposit.csv' from Dryad repository: 
+# https://doi.org/10.5061/dryad.m905qfv5p
 
-# before start download the dataset 'CatFood2021_deposit.csv'
-# from Dryad repository: https://doi.org/10.5061/dryad.m905qfv5p
-
-# the dataset should be saved in the folder Data/
-
-
-# Open R project in main folder
+# The dataset should be saved in the folder Data/
+# Open the R project in the main folder of this repository.
 
 
 # Setup ---------------------------------------------------------------------------------------
