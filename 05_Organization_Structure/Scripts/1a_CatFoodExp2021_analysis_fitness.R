@@ -7,7 +7,7 @@
 #
 # To run this down, download the dataset 'CatFood2021_deposit.csv' from Dryad repository: 
 # https://doi.org/10.5061/dryad.m905qfv5p
-
+#
 # The dataset should be saved in the folder Data/
 # Open the R project in the main folder of this repository.
 
@@ -53,9 +53,11 @@ table(cat_food_data$Treatment)
 table(cat_food_data[!duplicated(cat_food_data$MotherID), "AreaShortName"])
 
 
-# Fitness analysis ----------------------------------------------------------------------------
-# This section addresses research question 1: What are the fitness consequences of day-to-day 
-# timing (a)synchrony with budburst?
+# Survival analysis ----------------------------------------------------------------------------
+# This section analyses the consequences of day-to-day timing a(synchronoy) with budburst on the 
+# survival of caterpillars. The data is first prepared, then the raw survival data is plotted. 
+# Generalised linear models are then fit to model the influence of treatment on survival, and the
+# predicted survival based on these models is plotted.
 
 
 ## Survival data preparation ------------------------------------------------------------------
@@ -484,8 +486,9 @@ ggsave(filename = "Outputs/PupaWeight_predicted.png",
 
 
 # Fitness curve -------------------------------------------------------------------------------
-# This section calculates the fitness curve for each treatment.
-
+# This section calculates the fitness curve for each mismatch date, looking at the combination
+# of survival and pupation weight. New models are fit for these relationships, and the resulting fitness
+# curve is plotted.
 
 ## Refit models for fitness -------------------------------------------------------------------
 
