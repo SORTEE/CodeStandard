@@ -1,0 +1,8 @@
+"","npar","AIC","LRT","Pr(Chi)","mod"
+"<none>",NA,1029.49235787463,NA,NA,"glm_survival_full"
+"MismTreat1:PhotoTreat",1,1027.70269496584,0.210337091202746,0.646503323619817,"glm_survival_full"
+"MismTreat2:PhotoTreat",1,1027.61269056752,0.12033269289077,0.728673937064534,"glm_survival_full"
+"<none>1",NA,1026.06565314952,NA,NA,"glm_survival_no_interact"
+"MismTreat1",1,1143.20597330682,119.140320157298,9.75769269484001e-28,"glm_survival_no_interact"
+"MismTreat2",1,1096.01132990035,71.9456767508243,2.21203873478415e-17,"glm_survival_no_interact"
+"PhotoTreat",1,1024.3390861714,0.273433021877736,0.601038113860128,"glm_survival_no_interact"
