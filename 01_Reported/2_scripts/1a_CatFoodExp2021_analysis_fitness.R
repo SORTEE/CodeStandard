@@ -199,7 +199,7 @@ anova2$mod <- "lm2"
 
 lm3 <- update(lm2, ~ . - MismTreat2) # simplify model
 anova3 <- anova(lm3) %>% as.data.frame() # PhotoTreat and MismTreat significant
-anova3$mod <- "lm3"
+    anova3$mod <- "lm3"
 
 # Still there if exclude first time point with low sample size?
 lm4 <- lmer(PupaWeight ~ -1 + MismTreat1 + PhotoTreat + (1|MotherID), data=filter(d_pupa, MismTreat!=-4))
