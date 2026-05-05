@@ -11,11 +11,15 @@ Note: *This is an updated partial version from the [original repository](https:/
 ```
 .
   |- data
+  |- output
+    |- fig
+    |- result
+  |- renv
   |- scripts
     |- 1a_CatFoodExp2021_analysis_fitness.R
-  |- renv
   |- .Rprofile
   |- .gitignore
+  |- CITATION.cff
   |- CodeStandard.Rproj
   |- LICENSE
   |- README.md
@@ -26,39 +30,38 @@ Note: *This is an updated partial version from the [original repository](https:/
 
 1. Open [`CodeStandard.Rproj`](CodeStandard.Rproj) file in [RStudio](https://posit.co/download/rstudio-desktop/) or other compatible IDE
 
-2. Run [`1a_CatFoodExp2021_analysis_fitness.R`](scripts/1a_CatFoodExp2021_analysis_fitness.R) script
+2. Run [`scripts/1a_CatFoodExp2021_analysis_fitness.R`](scripts/1a_CatFoodExp2021_analysis_fitness.R) script
 
-3. If [`CatFood2021_deposit.csv`](data/CatFood2021_deposit.csv) file is not automatically downloaded to `data` folder, download it from <https://doi.org/10.5061/dryad.m905qfv5p> and place in the `data` folder.
+3. If [`data/CatFood2021_deposit.csv`](data/CatFood2021_deposit.csv) file is not automatically downloaded to `data` folder, download it from <https://doi.org/10.5061/dryad.m905qfv5p> and place in the `data` folder.
 
 
 ## Description of files
 
 | File name | Description |
 |-----------|-------------|
-| [`CatFood2021_deposit.csv`](1_data/CatFood2021_deposit.csv) | Dataset for the 2021 winter moth caterpillar feeding experiment deposited at Dryad <https://doi.org/10.5061/dryad.m905qfv5p> |
-| [`1a_CatFoodExp2021_analysis_fitness.R`](2_scripts/1a_CatFoodExp2021_analysis_fitness.R) | `R` script to reproduce the analysis and visualization of the 2021 winter moth caterpillar feeding experiment |
-| [`env_CatFoodExp2021_analysis.txt`](_src/env_CatFoodExp2021_analysis.txt) | Session information for used platform and `R` package versions for the analysis of 2021 winter moth caterpillar feeding experiment |
-| [`env_PopDyn_analysis.txt`](_src/env_PopDyn_analysis.txt) | Session information for used platform and `R` package versions for the analysis of winter moth population dynamics |
-| [`.Rprofile`](.Rprofile) | A plain text file containing `R` code that is automatically executed every time an `R` session starts |
-| [`.gitignore`](.gitignore) | A plain text file used to specify intentionally untracked files that Git should ignore |
+| [`data/CatFood2021_deposit.csv`](data/CatFood2021_deposit.csv) | Dataset from the 2021 winter moth caterpillar feeding experiment deposited at Dryad <https://doi.org/10.5061/dryad.m905qfv5p> |
+| [`scripts/1a_CatFoodExp2021_analysis_fitness.R`](scripts/1a_CatFoodExp2021_analysis_fitness.R) | `R` script to reproduce the analysis and visualization of the 2021 winter moth caterpillar feeding experiment |
+| [`.Rprofile`](.Rprofile) | A configuration file containing `R` code that is automatically executed every time an `R` session starts |
+| [`.gitignore`](.gitignore) | A plain text file used to specify files that we do not want Git to track (i.e. that Git should ignore) |
+| [`CITATION.cff`](CITATION.cff) | Machine-readable file that specifies how to cite this repository |
 | [`CodeStandard.Rproj`](CodeStandard.Rproj) | A project file used by RStudio to define and manage an `R` project |
-| [`LICENSE`](LICENSE) | Licence file for reusing the repository |
-| [`README.md`](README.md) | Description and metadata for repository |
-| [`renv.lock`](renv.lock) | A json file that records all the information needed to recreate the project in future |
+| [`LICENSE`](LICENSE) | Licence file specifying how this repository can be reused |
+| [`README.md`](README.md) | Description and metadata for this repository |
+| [`renv.lock`](renv.lock) | A json file that records all the information needed to recreate the R environment used for analysis |
 
-## Codebook for [`CatFood2021_deposit.csv`](1_data/CatFood2021_deposit.csv)
+## Codebook for [`data/CatFood2021_deposit.csv`](data/CatFood2021_deposit.csv)
 
 | Column name         | Description |
 |---------------------|-------------|
 | ExperimentName      | name of experiment |
-| YearCatch           | year in which the caterpillar caught | 
-| YearHatch           | year in which the eggs were hatched |
+| YearCatch           | year in which the parent adult moth(s) were caught | 
+| YearHatch           | year in which the eggs hatched |
 | TubeID              | id for the female parent |
-| AreaShortName       | name of area: `DO` for Doorwerth, `HV` for Hoge Veluwe, `OH` for Oosterhout, and `WA` for Warnsborn |
-| Site                | id for sites | 
-| Tree                | id for trees |
-| NovemberDate        | date of catch in November Days i.e. Julian dates with origin `YearCatch`-10-31 | 
-| ClutchID            | id for origin of caterpillar |
+| AreaShortName       | parent origin area name: `DO` for Doorwerth, `HV` for Hoge Veluwe, `OH` for Oosterhout, and `WA` for Warnsborn |
+| Site                | parent origin: id for catch site within area | 
+| Tree                | parent origin: id for trees |
+| NovemberDate        | parent origin date of catch in November Days i.e. Julian dates with origin `YearCatch`-10-31 | 
+| ClutchID            | id for clutch origin of caterpillar |
 | CaterpillarID       | id assigned to caterpillar |
 | Treatment           | name of assigned treatment |
 | HatchAprilDay       | date of hatching in April days (Julian dates with origin 2021-03-31) |
@@ -67,8 +70,8 @@ Note: *This is an updated partial version from the [original repository](https:/
 | PupaWeight_ingrams  | weight at pupation in grams |
 | AdultNovDate        | date of adult emergence in November days, if applicable (Julian dates with origin 2021-10-31) |
 | AdultWeight_ingrams | weight of adults in grams |
-| Sex                 | sex of adults |
-| Remarks             | any specific comment for observation |
+| Sex                 | sex of caterpillar (if reached adult stage) |
+| Remarks             | any comments related to data point |
 
 
 ## Citation
