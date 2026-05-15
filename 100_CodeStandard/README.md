@@ -49,7 +49,7 @@ Note: *This is an updated partial version from the [original repository](https:/
 | [`README.md`](README.md) | Description and metadata for this repository |
 | [`renv.lock`](renv.lock) | A json file that records all the information needed to recreate the R environment used for analysis |
 
-## Codebook for [`data/CatFood2021_deposit.csv`](data/CatFood2021_deposit.csv)
+## Codebook for `data/CatFood2021_deposit.csv`
 
 | Column name         | Description |
 |---------------------|-------------|
