@@ -32,14 +32,14 @@ Note: *This is an updated partial version from the [original repository](https:/
 
 2. Run [`scripts/1a_CatFoodExp2021_analysis_fitness.R`](scripts/1a_CatFoodExp2021_analysis_fitness.R) script
 
-3. If [`data/CatFood2021_deposit.csv`](data/CatFood2021_deposit.csv) file is not automatically downloaded to `data` folder, download it from <https://doi.org/10.5061/dryad.m905qfv5p> and place in the `data` folder.
+3. If `data/CatFood2021_deposit.csv` file is not automatically downloaded to `data` folder, download it from <https://doi.org/10.5061/dryad.m905qfv5p> and place in the `data` folder.
 
 
 ## Description of files
 
 | File name | Description |
 |-----------|-------------|
-| [`data/CatFood2021_deposit.csv`](data/CatFood2021_deposit.csv) | Dataset from the 2021 winter moth caterpillar feeding experiment deposited at Dryad <https://doi.org/10.5061/dryad.m905qfv5p> |
+| `data/CatFood2021_deposit.csv` | Dataset from the 2021 winter moth caterpillar feeding experiment deposited at Dryad <https://doi.org/10.5061/dryad.m905qfv5p> |
 | [`scripts/1a_CatFoodExp2021_analysis_fitness.R`](scripts/1a_CatFoodExp2021_analysis_fitness.R) | `R` script to reproduce the analysis and visualization of the 2021 winter moth caterpillar feeding experiment |
 | [`.Rprofile`](.Rprofile) | A configuration file containing `R` code that is automatically executed every time an `R` session starts |
 | [`.gitignore`](.gitignore) | A plain text file used to specify files that we do not want Git to track (i.e. that Git should ignore) |
