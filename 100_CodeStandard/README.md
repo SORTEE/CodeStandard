@@ -4,7 +4,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8276288.svg)](https://doi.org/10.5281/zenodo.8276288) Version of record scripts
 
-Note: *This is an updated partial version from the [original repository](https://github.com/NEvanDis/WM_fitness). All files are the same as in the original repository, except the script folder, where you find only the script `1a_CatFoodExp2021_analysis_fitness.R`*
+Note: *This is an updated partial version from the [original repository](https://github.com/NEvanDis/WM_fitness). Folder structure and files (incl. only script `1a_CatFoodExp2021_analysis_fitness.R`) of the original repository have been updated to exemplify best coding practices*
 
 ## Directory structure
 
@@ -32,24 +32,24 @@ Note: *This is an updated partial version from the [original repository](https:/
 
 2. Run [`scripts/1a_CatFoodExp2021_analysis_fitness.R`](scripts/1a_CatFoodExp2021_analysis_fitness.R) script
 
-3. If [`data/CatFood2021_deposit.csv`](data/CatFood2021_deposit.csv) file is not automatically downloaded to `data` folder, download it from <https://doi.org/10.5061/dryad.m905qfv5p> and place in the `data` folder.
+3. If `data/CatFood2021_deposit.csv` file is not automatically downloaded to `data` folder, download it from <https://doi.org/10.5061/dryad.m905qfv5p> and place in the `data` folder.
 
 
 ## Description of files
 
 | File name | Description |
 |-----------|-------------|
-| [`data/CatFood2021_deposit.csv`](data/CatFood2021_deposit.csv) | Dataset from the 2021 winter moth caterpillar feeding experiment deposited at Dryad <https://doi.org/10.5061/dryad.m905qfv5p> |
+| `data/CatFood2021_deposit.csv` | Dataset from the 2021 winter moth caterpillar feeding experiment deposited at Dryad <https://doi.org/10.5061/dryad.m905qfv5p> |
 | [`scripts/1a_CatFoodExp2021_analysis_fitness.R`](scripts/1a_CatFoodExp2021_analysis_fitness.R) | `R` script to reproduce the analysis and visualization of the 2021 winter moth caterpillar feeding experiment |
 | [`.Rprofile`](.Rprofile) | A configuration file containing `R` code that is automatically executed every time an `R` session starts |
 | [`.gitignore`](.gitignore) | A plain text file used to specify files that we do not want Git to track (i.e. that Git should ignore) |
 | [`CITATION.cff`](CITATION.cff) | Machine-readable file that specifies how to cite this repository |
 | [`CodeStandard.Rproj`](CodeStandard.Rproj) | A project file used by RStudio to define and manage an `R` project |
-| [`LICENSE`](LICENSE) | Licence file specifying how this repository can be reused |
+| [`LICENSE`](LICENSE) | License file specifying how this repository can be reused |
 | [`README.md`](README.md) | Description and metadata for this repository |
 | [`renv.lock`](renv.lock) | A json file that records all the information needed to recreate the R environment used for analysis |
 
-## Codebook for [`data/CatFood2021_deposit.csv`](data/CatFood2021_deposit.csv)
+## Codebook for `data/CatFood2021_deposit.csv`
 
 | Column name         | Description |
 |---------------------|-------------|
