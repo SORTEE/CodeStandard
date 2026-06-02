@@ -43,6 +43,7 @@ Note: *This is an updated partial version from the [original repository](https:/
 | [`scripts/1a_CatFoodExp2021_analysis_fitness.R`](scripts/1a_CatFoodExp2021_analysis_fitness.R) | `R` script to reproduce the analysis and visualization of the 2021 winter moth caterpillar feeding experiment |
 | [`.Rprofile`](.Rprofile) | A configuration file containing `R` code that is automatically executed every time an `R` session starts |
 | [`.gitignore`](.gitignore) | A plain text file used to specify files that we do not want Git to track (i.e. that Git should ignore) |
+| [`*.gitkeep`] | Empty placeholder file to make sure git will track directory structure but not directory content of the data and output folders |
 | [`CITATION.cff`](CITATION.cff) | Machine-readable file that specifies how to cite this repository |
 | [`CodeStandard.Rproj`](CodeStandard.Rproj) | A project file used by RStudio to define and manage an `R` project |
 | [`LICENSE`](LICENSE) | License file specifying how this repository can be reused |
