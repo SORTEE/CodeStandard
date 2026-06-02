@@ -4,5 +4,10 @@
 .Ruserdata
 *.DS_Store
 
-data/*.csv
+data/*
+output/fig/*
+output/result/*
 
+!*.gitkeep
+!output/fig/.gitkeep
+!output/result/.gitkeep
