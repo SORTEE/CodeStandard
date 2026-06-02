@@ -1,6 +1,6 @@
 #### Analysis of Phenological mismatch experiment 2021 ####
 
-# In this study, caterpillar eggs were taken from wild mothers caught in 2020. Timing of egg hatching
+# In this study, winter moth eggs were obtained from wild mothers caught in 2020. Timing of egg hatching
 # was manipulated, with eggs either hatching on the day of budburst (Day0), before (Day-4 to -1),
 # or after (Day+1 to +5). The photoperiod was also manipulated, with either a constant or changing
 # photoperiod.
@@ -18,6 +18,11 @@
 # This restores the versions of packages used in the original analysis.
 renv::restore()
 
+# NB: this only works well when the R version used is the same as recorded in the renv.lock file 
+# (here: v.4.2.2)
+# NB: the user needs to have Rtools installed to be able to download some package versions that are 
+# only available as source files  
+
 # If error when downloading digest :
   # (this happens, check https://stackoverflow.com/questions/48548767/can-not-download-digest-package-in-r)
 if(!require(digest))
@@ -30,23 +35,16 @@ set.seed(147)
 
 ## Load packages -------------------------------------------------------------------------------
 
-library(Rmisc)             # Used for calculating standard error and confidence intervals for data summaries
 library(rdryad)            # Used to download the data
-library(tidyverse)         # Used for data cleaning and manipulation.
+library(tidyverse)         # Used for data cleaning and manipulation (includes dplyr library)
+library(Rmisc)             # Used for calculating standard error and confidence intervals for data summaries
 library(cowplot)           # Used for creating and arranging plots, providing a clean theme for publication
 theme_set(theme_cowplot()) # Use white background instead of grey
 library(lme4)              # Used for fitting linear and generalized linear mixed-effects models (LMMs and GLMMs)
 library(lmerTest)          # Provides p-values for LMMs and GLMMs using Satterthwaite's approximation
-library(performance)       # Used to check model's assumption
+library(performance)       # Used to check model assumptions
 library(testthat)          # Used for unit tests
 library(ggpubr)            # Used to arrange multiple figures
-
-
-## Load functions  -------------------------------------------------------------------------------
-
-# pathF <- c("2_scripts/Functions/") # They are stored here
-# functions <- list.files(pathF)
-# sapply(functions, function(file) source(paste0(pathF, file))) %>% invisible()
 
 
 ## User configuration ----------------------------------------------------------------------------
@@ -55,10 +53,8 @@ library(ggpubr)            # Used to arrange multiple figures
 save_figures <- TRUE
 # set to TRUE to save tables (as .csv files)
 save_tables <- TRUE
-# set to TRUE to save session info again
-save_session_info <- TRUE
 
-# create output directory if saving is enabled
+# create output directory if saving is enabled and directories do not yet exist
 if (save_figures | save_tables) {
   if(!dir.exists("output")) dir.create("output")
   if(!dir.exists("output/result")) dir.create("output/result")
@@ -68,7 +64,8 @@ if (save_figures | save_tables) {
 
 ## Download data from dryad repository ----------------------------------------------------------
 
-# To run this script, download the dataset 'CatFood2021_deposit.csv' from Dryad repository: 
+# To run this script, the dataset 'CatFood2021_deposit.csv' needs to be downloaded
+  # from Dryad repository: 
   # https://doi.org/10.5061/dryad.m905qfv5p
   #
   # The dataset should be saved in the folder data/
@@ -76,14 +73,13 @@ if (save_figures | save_tables) {
 # Create folders to store data
 if(!dir.exists("data")) dir.create("data")
 
-# Check if data is present in folder
+# Check if data is present in folder if not yet exists
 file_name <- "CatFood2021_deposit.csv"
 file_path <- file.path("data", file_name)
-file_exists <- file.exists(file_path)
 
 # If not, automatically download it from Dryad
   # -> that way, this does not require user input
-if(file_exists == F) {
+if(file.exists(file_path) == F) {
   # Download dryad repo in rdryad cache
   doi <- "10.5061/dryad.m905qfv5p"
   tmp_files <- rdryad::dryad_download(doi)[[doi]]
@@ -92,7 +88,6 @@ if(file_exists == F) {
   file.copy(tmp_files[grepl(file_name, tmp_files)], 
           "data", 
           overwrite = TRUE)
-  
 }
 
 
@@ -101,32 +96,19 @@ if(file_exists == F) {
 cat_data_raw <- read.csv("data/CatFood2021_deposit.csv")
 
 
-## Arthur's note: I would remove the following tests ##
-test_that("raw data table has correct class and dimensions", {
-  expect_s3_class(cat_data_raw, "data.frame")
-  expect_equal(ncol(cat_data_raw), 19)
-  expect_equal(nrow(cat_data_raw), 976)
-})
-
-# Check that number of missing data is consistent with article
-test_that("346 pupated", {expect_equal(sum(is.na(cat_data_raw$DeadAprilDay)), 346)})
-test_that("630 died before pupation", {
-  expect_equal(sum(is.na(cat_data_raw$PupationAprilDay)), 630)
-  expect_equal(sum(is.na(cat_data_raw$PupaWeight_ingrams)), 630)
-})
-
-test_that("962 died before adulthood", {
-  expect_equal(sum(is.na(cat_data_raw$AdultNovDate)), 962)
-  expect_equal(sum(is.na(cat_data_raw$AdultWeight_ingrams)), 962)
-  expect_equal(sum(is.na(cat_data_raw$Sex)), 962)
-})
-
 ## Data summary -------------------------------------------------------------------------------
-# Quick checks of the data's structure
 
-# print the first 6 rows and the 19 columns
-head(cat_data_raw) 
-summary(cat_data_raw)
+# Quick checks of the data's structure
+class(cat_data_raw) # object type
+head(cat_data_raw) # print the first 6 rows and the 19 columns
+dim(cat_data_raw) # number of rows and columns
+str(cat_data_raw) # check variable classes summary(cat_data_raw)
+
+# renaming TubeID as MotherID to match the terminology used in the Statistical section of the paper
+cat_data <- cat_data_raw %>% rename(MotherID = TubeID)
+
+# The `Tree` column in this dataset refers to the tree ID where the mother moth 
+# was caught as per the long-term field data collection described in the paper.
 
 # Check for outliers
 # Histograms should not show any outliers
@@ -138,26 +120,34 @@ hist(cat_data_raw$PupaWeight_ingrams)
 hist(cat_data_raw$AdultNovDate)
 hist(cat_data_raw$AdultWeight_ingrams)
 
-# renaming TubeID as MotherID to match the terminology used in the Statistical section of the paper
-cat_data <- rename(cat_data_raw, MotherID = TubeID)
-
+# Check sample size
 test_that("22 different mothers", {expect_equal(length(unique(cat_data$MotherID)), 22)})
 test_that("15 treatment values", {expect_equal(length(unique(cat_data$Treatment)), 15)})
 table(cat_data$Treatment) # photoperiod and mismatch treatment coded in one variable
 
-# Expected n = 22 clutches ?? 15 treatments ?? 3 replicates = 990
+# Expected n = 22 clutches x 15 treatments x 3 replicates = 990
 nrow(cat_data)
-# Actual n = 976 ??? missing 14 individuals
+# Actual n = 976 -> missing 14 individuals
 
-# The `Tree` column in this dataset refers to the tree ID where the mother moth 
-# was caught as per the long-term field data collection described in the paper.
+# Check missing data
 xtabs(~ Treatment + MotherID, data = cat_data)
-# specific clutch ?? treatment combinations with < 3 individuals:
-# e.g., ConstDay0 ?? MotherID=16612 has 0; several others have 2 instead of 3
+# specific clutch x treatment combinations with < 3 individuals:
+# e.g., ConstDay0 x MotherID=16612 has 0; several others have 2 instead of 3
 # some individuals lacked survival or weight data
 
-# Photoperiod and mismatch treatment coded in one variable
-table(cat_data$Treatment) 
+nr_pupated <- sum(is.na(cat_data_raw$DeadAprilDay)) # number of caterpillars that pupated
+nr_died <- sum(is.na(cat_data_raw$PupationAprilDay)) # number of caterpillars that died before pupation
+nr_pup_died <- sum(is.na(cat_data_raw$AdultNovDate)) # number of pupae that died before adult emergence
+
+# Check that number of missing data is consistent across columns
+test_that("Died before pupation", {
+  expect_equal(sum(is.na(cat_data_raw$PupationAprilDay)), sum(is.na(cat_data_raw$PupaWeight_ingrams)))
+})
+
+test_that("Died before adulthood", {
+  expect_equal(sum(is.na(cat_data_raw$AdultNovDate)), sum(is.na(cat_data_raw$AdultWeight_ingrams)))
+  expect_equal(sum(is.na(cat_data_raw$AdultWeight_ingrams)), sum(is.na(cat_data_raw$Sex)))
+})
 
 # N per Area
 table(cat_data[!duplicated(cat_data$MotherID), "AreaShortName"])
@@ -182,11 +172,11 @@ cat_data_surv <- cat_data %>%
   select(MotherID, Treatment, PhotoTreat, MismTreat, 
          CaterpillarID, DeadAprilDay, PupationAprilDay) %>% 
   # Move the death and pupation dates into long format
-  # This is necessary to create a "survival" variable that indicates whether the caterpillar died or survived to pupate:
+  # This is necessary to create a "survival" variable that indicates whether the caterpillar died or survived to pupation:
   pivot_longer(cols = c(DeadAprilDay, PupationAprilDay),
-               names_to = "Info", values_to = "TimeOfDeath") %>%
+               names_to = "Info", values_to = "TimeOfEvent") %>%
   # Remove missing values:
-  filter(!is.na(TimeOfDeath)) %>%
+  filter(!is.na(TimeOfEvent)) %>%
   # Create the `survival` variable as a binary indicator for the binomial mixed model
   # Coded as 1 for death (`DeadAprilDay`) and 0 for survival (`PupationAprilDay`):
   mutate(survival = ifelse(Info == "DeadAprilDay", 1, 0)) %>% 
@@ -210,8 +200,8 @@ cat_data_surv <- cat_data %>%
          MismTreat_squared = (MismTreat - min(MismTreat) + 1)^2) 
 
 
-## Arthur's note: I would remove the folowing 4 tests
-test_that("survival data table has correct class and dimensions", {
+# Tests after data manipulation
+test_that("Survival data table has correct class and dimensions", {
   expect_s3_class(cat_data_surv, "data.frame")
   expect_equal(ncol(cat_data_surv), 12)
   expect_equal(nrow(cat_data_surv), 976)
@@ -234,12 +224,11 @@ levels(cat_data_surv$PhotoTreat)
 levels(cat_data_surv$MismTreat_factor) 
 levels(cat_data_surv$MotherID)
 
-# 'TimeOfDeath' is date of either death or pupation
-table(cat_data_surv$TimeOfDeath)
+# 'TimeOfEvent' is date of either death or pupation
+table(cat_data_surv$TimeOfEvent)
 
 # 'survival' is the response variable (i.e., whether the caterpillar died or not) 
 table(cat_data_surv$survival) 
-
 
 
 ## Visualize raw survival data --------------------------------------------------------------------------
@@ -305,7 +294,7 @@ glmSurv_step1 <- lme4::glmer(survival ~ (MismTreat_noNeg + MismTreat_squared)*Ph
                              na.action = "na.fail",
                              control = glmerControl(calc.derivs = F)) # helps convergence
 # Check model assumptions
-check_model(glmSurv_step1)
+performance::check_model(glmSurv_step1)
 
 # Use ANOVA to check significance of covariates (here: interactions not significant)
 anovaSurv_step1 <- drop1(glmSurv_step1,test = "Chi") %>% as.data.frame() 
@@ -317,7 +306,7 @@ anovaSurv_step1$mod <- "glmSurv_step1"
 glmSurv_step2 <- update(glmSurv_step1, ~ . -MismTreat_noNeg:PhotoTreat - MismTreat_squared:PhotoTreat) 
 
 # Test significance of updated model with ANOVA 
-# (here: Photoperiod not significant, but both mismatch treatment covariates are)
+# (here: Photoperiod not significant, but both mismatch treatment fixed effects are)
 anovaSurv_step2 <- drop1(glmSurv_step2,test = "Chi") %>% as.data.frame()
 anovaSurv_step2$mod <- "glmSurv_step2"
 
@@ -325,7 +314,7 @@ anovaSurv_step2$mod <- "glmSurv_step2"
 glmSurv_final <- glmSurv_step2
 
 # Check model assumptions
-check_model(glmSurv_final)
+performance::check_model(glmSurv_final)
 
 # # View model summary (NB: estimates are log odds)
 summary(glmSurv_final)
@@ -385,6 +374,7 @@ if(save_figures) {
   
 }
   
+# End of survival analysis
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
@@ -429,20 +419,12 @@ cat_data_pupa <- cat_data %>%
 # Check structure of cleaned data
 head(cat_data_pupa)
 
-## tests after data manipulaiton ----
-test_that("pupa data table has correct class and dimensions", {
+# Tests after data manipulation
+test_that("Pupa data table has correct class and dimensions", {
   expect_s3_class(cat_data_pupa, "data.frame")
   expect_equal(ncol(cat_data_pupa), 12)
-  expect_equal(nrow(cat_data_pupa), 346) # 346 individuals survived until pupation
+  expect_equal(nrow(cat_data_pupa), nr_pupated)
 })
-
-# Check percentage that pupated (35.45)
-test_that("Check percentage that pupated (35.45)", {
-  expect_equal(
-    round(nrow(cat_data_pupa) / nrow(cat_data)*100, 2), 35.45 )
-})
-
-# arthur's note: I would remove the next 3 tests
 test_that("Treatment_releveled reflects Treatment", {
   expect_true(all(cat_data_pupa$Treatment_releveled == cat_data_pupa$Treatment))})
 test_that("MismTreat_squared equals MismTreat_noNeg squared", {
@@ -450,10 +432,13 @@ test_that("MismTreat_squared equals MismTreat_noNeg squared", {
 test_that("Caterpillar ID are unique", {
   expect_equal(length(unique(cat_data_pupa$CaterpillarID)), nrow(cat_data_pupa))})
 
+# Calculate percentage of caterpillars that pupated
+perc_pupated <- round(nrow(cat_data_pupa) / nrow(cat_data)*100, 2)
+
 
 ## Visualize raw pupation weight data -------------------------------------------------------------------------
 
-# Summarize mean weight for each treatment (some SEs not calculated as n = 1 for some treatments)
+# Summarize mean weight for each treatment
 weight <- Rmisc::summarySE(cat_data_pupa, 
                            measurevar = "PupaWeight", 
                            groupvars = c("MismTreat", "PhotoTreat"))
@@ -505,7 +490,7 @@ lmPupa_step1 <- lmerTest::lmer(PupaWeight ~ (MismTreat_noNeg + MismTreat_squared
                                data=cat_data_pupa)
 
 # Check model assumptions
-check_model(lmPupa_step1)
+performance::check_model(lmPupa_step1)
 # Line 20 is a clear outlier.
 
 # Use ANOVA to check significance of covariates (here: interactions not significant)
@@ -536,13 +521,13 @@ lmPupa_step3_excludeOutlier <- lmerTest::lmer(PupaWeight ~ -1 + MismTreat_noNeg 
 anova(lmPupa_step3_excludeOutlier) 
 
 # Check model assumptions
-check_model(lmPupa_step3_excludeOutlier)
+performance::check_model(lmPupa_step3_excludeOutlier)
 
 # Use the version including the first mismatch day as the final model
 lmPupa_final <- lmPupa_step3
 
 # Check model assumptions
-check_model(lmPupa_final)
+performance::check_model(lmPupa_final)
 
 # View model summary
 summary(lmPupa_final)
@@ -573,7 +558,7 @@ head(lmPupa_pred)
 
 ## Predicted pupation weight figure --------------------------------------------------------------------
 
-# Get mean prediction and SEs for each treatment - some have NA standard errors due to sample size
+# Get mean prediction and SEs for each treatment
 pred_pupa <- Rmisc::summarySE(lmPupa_pred, measurevar = "pred", groupvars = c("MismTreat", "PhotoTreat")) 
 # The warning message occurs because at Mismatch = -4 sample size is N = 1 for both treatments
 # and standard deviations cannot be computed
@@ -597,6 +582,7 @@ if(save_figures) {
     )
 }
 
+# End of pupation weight analysis
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
@@ -632,7 +618,7 @@ if(save_figures) {
 }
 
 
-## <Construct Fitness curve> -------------------------------------------------------------------------------
+## <Construct fitness curve> -------------------------------------------------------------------------------
 # This section calculates the fitness curve for each mismatch day, looking at the combination
 # of survival and pupation weight. New models are fit for these relationships, and 
 # the resulting fitness curve is plotted.
@@ -640,7 +626,7 @@ if(save_figures) {
 
 ## Refit models for fitness -------------------------------------------------------------------
 
-# Refit models for weight and survival without the photoperiod effect (only mismatch and mismatch square)
+# Refit models for weight and survival without the photoperiod effect (only mismatch and mismatch squared)
 modelSurv_fitness <- lme4::glmer(survival ~ MismTreat_noNeg + MismTreat_squared + (1 | MotherID), 
                                  family = "binomial",
                                  data = cat_data_surv)
@@ -660,13 +646,14 @@ predSurv_fitness$survpred <- (1 - predSurv_fitness$pred)
 # Get predictions of weight for fitness curve
 # Remove duplicates for each brood since all have same prediction
 predPupa_fitness <- cat_data_pupa[!duplicated(cat_data_pupa[, c("MotherID", "MismTreat_factor")]),] 
+nrow(predPupa_fitness) # 154 clutches with >=1 caterpillar surviving until pupation
 
 # Predict weight
 predPupa_fitness$pred <- predict(modelPupa_fitness, newdata = predPupa_fitness, type = "response")
 
 # Check prediction sample size
-test_that("220 observations = 22 mothers * 10 MismTreat groups", {expect_equal(nrow(predSurv_fitness), 220)})
-test_that("154 predicted weights", {expect_equal(nrow(predPupa_fitness), 154)})
+test_that("220 observations = 22 mothers * 10 MismTreat groups", {expect_equal(!is.na(predSurv_fitness$pred), 220)})
+test_that("154 predicted weights", {expect_equal(!is.na(predPupa_fitness$pred), 154)})
 
 # View first rows of each set of predictions
 head(predSurv_fitness) # pred = probability of dying, survpred = 1 - pred, 
@@ -679,15 +666,12 @@ head(predPupa_fitness) # pred = pupation weight
 RelFit <- merge(predSurv_fitness[, c("MotherID", "MismTreat", "survpred")],
                 predPupa_fitness[, c("MotherID", "MismTreat", "pred")], 
                 by = c("MotherID", "MismTreat"), all = T)
-colnames(RelFit)[c(3, 4)] <- c("survpred", "pupwpred")
+RelFit <- RelFit %>% rename(pred = pupwpred)
 
 # Multiply absolute weight and survival
-RelFit$RelFit_NonNul <- RelFit$survpred*RelFit$pupwpred 
+RelFit$RelFit_NonNul <- RelFit$survpred * RelFit$pupwpred 
 
-# test
-test_that("154 clutches with >=1 caterpillar surviving until pupation", {
-  expect_equal(sum(!is.na(RelFit$pupwpred)),154)})
-# for the other clutches, fitness = 0
+# For clutches with no caterpillars surviving until pupation, fitness = 0
 RelFit$Fit <- ifelse(is.na(RelFit$RelFit_NonNul) == T, 0, RelFit$RelFit_NonNul)
 
 # Fit a loess model to describe the fitness curve
@@ -699,13 +683,13 @@ curve <- RelFit[!duplicated(RelFit[, c("MismTreat")]),] %>% select(MismTreat)
 
 # Add predictions from loess model
 curve$pred <- predict(loess_mod, newdata = curve)
-curve <- arrange(curve, MismTreat)
+curve <- curve %>% arrange(MismTreat)
 
 # Calculate relative fitness compared to peak
 MismTreat_FitPeak <- curve$MismTreat[curve$pred == max(curve$pred)] 
 curve$rel <- curve$pred / filter(curve, MismTreat == MismTreat_FitPeak)$pred 
 
-RelFit$rel <- RelFit$Fit / mean(filter(RelFit, MismTreat == 2)$Fit)
+RelFit$rel <- RelFit$Fit / mean(filter(RelFit, MismTreat == MismTreat_FitPeak)$Fit)
 
 # Get mean relative fitness for each mismatch day
 RelFit_means <- Rmisc::summarySE(RelFit, measurevar = "rel", groupvars = c("MismTreat"))
@@ -718,7 +702,9 @@ RelFit_means$curve <- curve$rel
 head(RelFit_means)
 
 # Save RelFit_means
-if(save_tables) write.csv(RelFit_means, file = "output/result/RelFitness_rev.csv", row.names = F)
+if(save_tables) { 
+  write.csv(RelFit_means, file = "output/result/RelFitness_rev.csv", row.names = F)
+}
  
 
 ## Relative fitness curve figure ---------------------------------------------------------------------
@@ -754,65 +740,63 @@ if(save_figures) {
 }
 
 
-# Average fitness loss per day  -------------------------------------------
+## Calculate average fitness loss per day  -------------------------------------------
+# NB: in the original analysis these values were calculated in a not-deposited excel
+#     thus not reproducible nor code-based
 
-## Arthur's Note: 
-## this seems to be a new code not included before. 
-## I would kept the calculation and saving outputs. 
-## Maybe only letting the calculation of values reported in the text is enough.
-
-## the function checkReproducibilityValues was is not included here because I think 
-## this is too advanced to be included. BUT, if the checking are reasonable, including 
-## test_that statements would be enough. 
-
-
-# 1. Hatching earlier than budburst date
-
-fitness_loss_hatchedEarlier <- 
-RelFit_means %>%
-  dplyr::select(MismTreat, curve) %>%
-  dplyr::filter(MismTreat <= 2) %>%
-  dplyr::rename("pred_fitness" = "curve") %>%
+## Hatching earlier than budburst
+fitness_loss_hatchedEarlier <- RelFit_means %>%
+  select(MismTreat, curve) %>%
+  filter(MismTreat <= MismTreat_FitPeak) %>%
+  rename("pred_fitness" = "curve") %>%
   # What would have been the mean fitness if hatched one day later?
   mutate(lagged_fitness = lead(pred_fitness)) %>%
   mutate(fitness_loss = lagged_fitness - pred_fitness)
 
-fitness_loss_hatchedEarlier %>% print()
+# Check output
+print(fitness_loss_hatchedEarlier)
 
-# Mean value ? Should be 14%
-fitness_loss_earlier <- na.omit(fitness_loss_hatchedEarlier$fitness_loss)
-mean_fitness_loss_earlier <- exp(mean(log(fitness_loss_earlier))) %>% round(2)
-checkReproducibilityValues(mean_fitness_loss_earlier, 0.14)
+# Calculate mean fitness loss -> Should be 14%
+mean_fitness_loss_earlier <- exp(mean(log(fitness_loss_hatchedEarlier$fitness_loss), na.rm = TRUE)) %>% round(2)
+#checkReproducibilityValues(mean_fitness_loss_earlier, 0.14)
+test_that("Mean fitness loss before budburst equals 0.14", {expect_equal(mean_fitness_loss_earlier, 0.14)})
 
-# Max value ? Should be 32%
+# Calculate max fitness loss -> Should be 32%
 fitness_loss_hatchedEarlier %>% dplyr::slice(which.max(fitness_loss)) # corresponds to day -1
-max_fitness_loss_earlier <- fitness_loss_hatchedEarlier$fitness_loss %>% max(na.rm = T) %>% round(2)
-checkReproducibilityValues(max_fitness_loss_earlier, 0.32)
+max_fitness_loss_earlier <- max(fitness_loss_hatchedEarlier$fitness_loss, na.rm = TRUE) %>% round(2)
+#checkReproducibilityValues(max_fitness_loss_earlier, 0.32)
+test_that("Max fitness loss before budburst equals 0.32", {expect_equal(max_fitness_loss_earlier, 0.32)})
 
-# 2. Hatching later than budburst date
-fitness_loss_hatchedLater <- 
-RelFit_means %>%
-  dplyr::select(MismTreat, curve) %>%
-  dplyr::filter(MismTreat >= 2) %>%
-  dplyr::rename("pred_fitness" = "curve") %>%
+
+## Hatching later than budburst
+fitness_loss_hatchedLater <- RelFit_means %>%
+  select(MismTreat, curve) %>%
+  filter(MismTreat >= MismTreat_FitPeak) %>%
+  rename(pred_fitness = curve) %>%
   # What would have been the mean fitness if hatched one day later?
   mutate(lagged_fitness = lag(pred_fitness)) %>%
   mutate(fitness_loss = lagged_fitness - pred_fitness)
 
-fitness_loss_hatchedLater %>% print
+# Check output
+print(fitness_loss_hatchedLater)
 
-# Mean value ? Should be 13% (although reported as 6% in paper)
-fitness_loss_Later <- na.omit(fitness_loss_hatchedLater$fitness_loss)
-mean_fitness_loss_Later <- exp(mean(log(fitness_loss_Later))) %>% round(2)
-checkReproducibilityValues(mean_fitness_loss_Later, 0.13)
+# Calculate mean fitness loss -> Should be 13% (although reported as 6% in paper)
+mean_fitness_loss_later <- exp( mean( log(fitness_loss_hatchedLater$fitness_los), na.rm = TRUE) ) %>% round(2)
+# necessary to do log() %>% mean() %>% exp()? Cannot just use mean()?
+#checkReproducibilityValues(mean_fitness_loss_Later, 0.13)
+test_that("Mean fitness loss after budburst equals 0.13", {expect_equal(mean_fitness_loss_later, 0.13)})
 
-# Max value ? Should be 32%
+# Calculate max fitness loss -> Should be 24%
 fitness_loss_hatchedLater %>% dplyr::slice(which.max(fitness_loss)) # corresponds to day -1
-max_fitness_loss_Later <- fitness_loss_hatchedLater$fitness_loss %>% max(na.rm = T) %>% round(2)
-checkReproducibilityValues(max_fitness_loss_Later, 0.24)
+max_fitness_loss_later <- fitness_loss_hatchedLater$fitness_loss %>% max(na.rm = TRUE) %>% round(2)
+#checkReproducibilityValues(max_fitness_loss_Later, 0.24)
+test_that("Max fitness loss after budburst equals 0.24", {expect_equal(max_fitness_loss_later, 0.24)})
 
-# To save output tables
+
+## Save output tables
 if(save_tables) {
   write.csv(fitness_loss_hatchedEarlier, file="output/fitness_loss_hatchedEarlier.csv")
   write.csv(fitness_loss_hatchedLater, file="output/fitness_loss_hatchedLater.csv")
 }
+# NB: make sure also the day of max fitness loss is reported!
+# + Combine into one table
