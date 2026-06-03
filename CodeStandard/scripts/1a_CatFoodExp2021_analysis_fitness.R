@@ -19,7 +19,7 @@
 #     that are only available as source files  
 
 # Want to use renv to restore the versions of packages used in the original analysis?
-USE_RENV <- FALSE # TRUE = Yes, FALSE = No 
+USE_RENV <- TRUE # TRUE = Yes, FALSE = No 
 
 if(USE_RENV) { 
   renv::restore()
@@ -40,9 +40,13 @@ if(!require(digest)) {
   install.packages('digest', repos = 'http://cran.us.r-project.org')
 }
 
+# renv might miss packages DHARMa and see (required for performance::check_model)
+if(!require(DHARMa)) renv::install("DHARMa")
+if(!require(see)) renv::install("see")
+
 # Check that installation of packages worked
 renv::status()
-# NB: resolve any issues by following renv advice
+# NB: resolve any issues following renv instructions
 
 # Setting seed for random processes
 set.seed(147)
@@ -85,7 +89,7 @@ if (save_figures | save_tables) {
   #
   # The dataset should be saved in the folder data/
 
-# Create folders to store data
+# Create folder to store the data
 if(!dir.exists("data")) dir.create("data")
 
 # Check if data is present in folder if not yet exists
@@ -103,7 +107,7 @@ if(file.exists(file_path) == F) {
           "data", 
           overwrite = TRUE)
 }
-# or download the data file yourself (see link above) and place it in the data/ folder
+# or download the data file yourself (see doi link above) and place it in the data/ folder
 
 
 ## Load data -----------------------------------------------------------------------------------
@@ -120,7 +124,7 @@ dim(cat_data_raw) # number of rows and columns
 str(cat_data_raw) # check variable classes summary(cat_data_raw)
 
 # renaming TubeID as MotherID to match the terminology used in the Statistical section of the paper
-cat_data <- cat_data_raw %>% rename(MotherID = TubeID)
+cat_data <- cat_data_raw %>% dplyr::rename(MotherID = TubeID)
 
 # The `Tree` column in this dataset refers to the tree ID where the mother moth 
 # was caught as per the long-term field data collection described in the paper.
@@ -164,7 +168,7 @@ test_that("Died before adulthood", {
   expect_equal(sum(is.na(cat_data_raw$AdultWeight_ingrams)), sum(is.na(cat_data_raw$Sex)))
 })
 
-# N per Area
+# Number of cluches per Area
 table(cat_data[!duplicated(cat_data$MotherID), "AreaShortName"])
 # should match the counts given in section 2.b Phenological mismatch experiment
 
@@ -198,7 +202,7 @@ cat_data_surv <- cat_data %>%
   # Convert variables into factors for modelling: 
   mutate(Treatment = as.factor(Treatment), 
          PhotoTreat = as.factor(ifelse(PhotoTreat == "Chang", "Changing", "Constant")), 
-         MismTreatf = as.factor(MismTreat), 
+         MismTreat_factor = as.factor(MismTreat), 
          MotherID = as.factor(MotherID)) %>%
   # Order factor levels for treatments and get numeric version of mismatch day:      
   mutate(Treatment_releveled = factor(Treatment, levels = c("ChangDay-4", "ChangDay-3", "ChangDay-2",
@@ -239,10 +243,10 @@ levels(cat_data_surv$PhotoTreat)
 levels(cat_data_surv$MismTreat_factor) 
 levels(cat_data_surv$MotherID)
 
-# 'TimeOfEvent' is date of either death or pupation
+# 'TimeOfEvent' are dates of either death or pupation in April days (Julian dates with origin March 31)
 table(cat_data_surv$TimeOfEvent)
 
-# 'survival' is the response variable (i.e., whether the caterpillar died or not) 
+# 'Survival' is the response variable (i.e., whether the caterpillar died or not) 
 table(cat_data_surv$survival) 
 
 
@@ -331,7 +335,7 @@ glmSurv_final <- glmSurv_step2
 # Check model assumptions
 performance::check_model(glmSurv_final)
 
-# # View model summary (NB: estimates are log odds)
+# View model summary (NB: estimates are log odds)
 summary(glmSurv_final)
 
 # Extract estimated coefficients as dataframe
@@ -586,6 +590,8 @@ p_weight <- raw_weight +
   # Add labels for sample size:
   geom_text(data = filter(weight, PhotoTreat == "Changing"), aes(label = N, y = PupaWeight-pos-1.5), col = "black", size = 4, fontface = "bold") +
   geom_text(data = filter(weight, PhotoTreat == "Constant"), aes(label = N, y = PupaWeight+pos+2.3), col = "black", size = 4, fontface = "bold")
+
+# View figure
 p_weight
 
 # Save the figure
@@ -667,8 +673,8 @@ nrow(predPupa_fitness) # 154 clutches with >=1 caterpillar surviving until pupat
 predPupa_fitness$pred <- predict(modelPupa_fitness, newdata = predPupa_fitness, type = "response")
 
 # Check prediction sample size
-test_that("220 observations = 22 mothers * 10 MismTreat groups", {expect_equal(!is.na(predSurv_fitness$pred), 220)})
-test_that("154 predicted weights", {expect_equal(!is.na(predPupa_fitness$pred), 154)})
+test_that("220 observations = 22 mothers * 10 MismTreat groups", {expect_equal(sum(!is.na(predSurv_fitness$pred)), 220)})
+test_that("154 predicted weights", {expect_equal(sum(!is.na(predPupa_fitness$pred)), 154)})
 
 # View first rows of each set of predictions
 head(predSurv_fitness) # pred = probability of dying, survpred = 1 - pred, 
@@ -680,14 +686,14 @@ head(predPupa_fitness) # pred = pupation weight
 # Combine weight and survival predictions
 RelFit <- merge(predSurv_fitness[, c("MotherID", "MismTreat", "survpred")],
                 predPupa_fitness[, c("MotherID", "MismTreat", "pred")], 
-                by = c("MotherID", "MismTreat"), all = T)
-RelFit <- RelFit %>% rename(pred = pupwpred)
+                by = c("MotherID", "MismTreat"), all = TRUE)
+RelFit <- RelFit %>% dplyr::rename(pupwpred = pred)
 
 # Multiply absolute weight and survival
 RelFit$RelFit_NonNul <- RelFit$survpred * RelFit$pupwpred 
 
 # For clutches with no caterpillars surviving until pupation, fitness = 0
-RelFit$Fit <- ifelse(is.na(RelFit$RelFit_NonNul) == T, 0, RelFit$RelFit_NonNul)
+RelFit$Fit <- ifelse(is.na(RelFit$RelFit_NonNul) == TRUE, 0, RelFit$RelFit_NonNul)
 
 # Fit a loess model to describe the fitness curve
 loess_mod <- loess(Fit ~ -1 + MismTreat, data = RelFit) 
@@ -763,7 +769,7 @@ if(save_figures) {
 fitness_loss_hatchedEarlier <- RelFit_means %>%
   select(MismTreat, curve) %>%
   filter(MismTreat <= MismTreat_FitPeak) %>%
-  rename("pred_fitness" = "curve") %>%
+  dplyr::rename(pred_fitness = curve) %>%
   # What would have been the mean fitness if hatched one day later?
   mutate(lagged_fitness = lead(pred_fitness)) %>%
   mutate(fitness_loss = lagged_fitness - pred_fitness)
@@ -771,15 +777,13 @@ fitness_loss_hatchedEarlier <- RelFit_means %>%
 # Check output
 print(fitness_loss_hatchedEarlier)
 
-# Calculate mean fitness loss -> Should be 14%
+# Calculate mean fitness loss (using geometric mean) -> Should be 14%
 mean_fitness_loss_earlier <- exp(mean(log(fitness_loss_hatchedEarlier$fitness_loss), na.rm = TRUE)) %>% round(2)
-#checkReproducibilityValues(mean_fitness_loss_earlier, 0.14)
 test_that("Mean fitness loss before budburst equals 0.14", {expect_equal(mean_fitness_loss_earlier, 0.14)})
 
 # Calculate max fitness loss -> Should be 32%
-fitness_loss_hatchedEarlier %>% dplyr::slice(which.max(fitness_loss)) # corresponds to day -1
+max_fitness_loss_earlier_day <- fitness_loss_hatchedEarlier %>% dplyr::slice(which.max(fitness_loss))
 max_fitness_loss_earlier <- max(fitness_loss_hatchedEarlier$fitness_loss, na.rm = TRUE) %>% round(2)
-#checkReproducibilityValues(max_fitness_loss_earlier, 0.32)
 test_that("Max fitness loss before budburst equals 0.32", {expect_equal(max_fitness_loss_earlier, 0.32)})
 
 
@@ -787,7 +791,7 @@ test_that("Max fitness loss before budburst equals 0.32", {expect_equal(max_fitn
 fitness_loss_hatchedLater <- RelFit_means %>%
   select(MismTreat, curve) %>%
   filter(MismTreat >= MismTreat_FitPeak) %>%
-  rename(pred_fitness = curve) %>%
+  dplyr::rename(pred_fitness = curve) %>%
   # What would have been the mean fitness if hatched one day later?
   mutate(lagged_fitness = lag(pred_fitness)) %>%
   mutate(fitness_loss = lagged_fitness - pred_fitness)
@@ -795,23 +799,26 @@ fitness_loss_hatchedLater <- RelFit_means %>%
 # Check output
 print(fitness_loss_hatchedLater)
 
-# Calculate mean fitness loss -> Should be 13% (although reported as 6% in paper)
-mean_fitness_loss_later <- exp( mean( log(fitness_loss_hatchedLater$fitness_los), na.rm = TRUE) ) %>% round(2)
-# necessary to do log() %>% mean() %>% exp()? Cannot just use mean()?
-#checkReproducibilityValues(mean_fitness_loss_Later, 0.13)
+# Calculate mean fitness loss (using geometric mean) -> Should be 13% (although reported as 6% in paper)
+mean_fitness_loss_later <- exp(mean(log(fitness_loss_hatchedLater$fitness_los), na.rm = TRUE)) %>% round(2)
 test_that("Mean fitness loss after budburst equals 0.13", {expect_equal(mean_fitness_loss_later, 0.13)})
 
 # Calculate max fitness loss -> Should be 24%
-fitness_loss_hatchedLater %>% dplyr::slice(which.max(fitness_loss)) # corresponds to day -1
+max_fitness_loss_later_day <- fitness_loss_hatchedLater %>% dplyr::slice(which.max(fitness_loss))
 max_fitness_loss_later <- fitness_loss_hatchedLater$fitness_loss %>% max(na.rm = TRUE) %>% round(2)
-#checkReproducibilityValues(max_fitness_loss_Later, 0.24)
 test_that("Max fitness loss after budburst equals 0.24", {expect_equal(max_fitness_loss_later, 0.24)})
 
 
+## Combine results
+fitness_loss <- data.frame(rel_to_peak = c("earlier", "later"), 
+                           mean_rate = c(mean_fitness_loss_earlier, mean_fitness_loss_later), 
+                           max_rate = c(max_fitness_loss_earlier, max_fitness_loss_later), 
+                           day_max = c(max_fitness_loss_earlier_day$MismTreat, max_fitness_loss_later_day$MismTreat))
+
 ## Save output tables
 if(save_tables) {
-  write.csv(fitness_loss_hatchedEarlier, file="output/fitness_loss_hatchedEarlier.csv")
-  write.csv(fitness_loss_hatchedLater, file="output/fitness_loss_hatchedLater.csv")
+  write.csv(fitness_loss, file="output/result/fitness_loss_rates.csv")
 }
-# NB: make sure also the day of max fitness loss is reported!
-# + Combine into one table
+
+# End of script
+## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
