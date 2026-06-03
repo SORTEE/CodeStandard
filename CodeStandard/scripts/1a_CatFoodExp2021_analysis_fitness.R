@@ -18,33 +18,41 @@
 # NB: the user needs to have Rtools installed to be able to download the package versions 
 #     that are only available as source files  
 
+# Need to install packages?
+install_needed <- TRUE
+
 # Want to use renv to restore the versions of packages used in the original analysis?
-USE_RENV <- TRUE # TRUE = Yes, FALSE = No 
+use_renv <- TRUE
 
-if(USE_RENV) { 
-  renv::restore()
-  # NB: this only works well when the R version used is the same as recorded 
-  #     in the renv.lock file (here: v.4.5.2)
-  # if renv::restore() fails, restart R, turn USE_RENV to FALSE and try again
-} else {
-  # when renv::restore() fails, delete the renv.lock file
-  file.remove("renv.lock")
+# Install packages and set up environment
+if(install_needed) {
   
-  # and create and record your own environment
-  renv::init()
-}
-
-# If error when downloading digest :
+  if(use_renv) { 
+    renv::restore()
+    # NB: this only works well when the R version used is the same as recorded 
+    #     in the renv.lock file (here: v.4.5.2)
+    # if renv::restore() fails, restart R, turn USE_RENV to FALSE and try again
+  } else {
+    # when renv::restore() fails, delete the renv.lock file
+    file.remove("renv.lock")
+    
+    # and create and record your own environment
+    renv::init()
+  }
+  
+  # If error when downloading digest :
   # (this happens, check https://stackoverflow.com/questions/48548767/can-not-download-digest-package-in-r)
-if(!require(digest)) {
-  install.packages('digest', repos = 'http://cran.us.r-project.org')
+  if(!require(digest)) {
+    install.packages('digest', repos = 'http://cran.us.r-project.org')
+  }
+  
+  # renv might miss packages DHARMa and see (required for performance::check_model)
+  if(!require(DHARMa)) renv::install("DHARMa")
+  if(!require(see)) renv::install("see")
+  
 }
 
-# renv might miss packages DHARMa and see (required for performance::check_model)
-if(!require(DHARMa)) renv::install("DHARMa")
-if(!require(see)) renv::install("see")
-
-# Check that installation of packages worked
+# Check that analysis environment was set up well
 renv::status()
 # NB: resolve any issues following renv instructions
 
@@ -64,6 +72,7 @@ library(lmerTest)          # Provides p-values for LMMs and GLMMs using Satterth
 library(performance)       # Used to check model assumptions
 library(testthat)          # Used for unit tests
 library(ggpubr)            # Used to arrange multiple figures
+library(rmarkdown)         # Used to automatically turn script into .Rmarkdown file + convert to html
 
 
 ## User configuration ----------------------------------------------------------------------------
@@ -96,8 +105,10 @@ if(!dir.exists("data")) dir.create("data")
 file_name <- "CatFood2021_deposit.csv"
 file_path <- file.path("data", file_name)
 
-# If not, automatically download it from Dryad (does not require user input)
-if(file.exists(file_path) == F) {
+# If not, want to automatically download it from Dryad (does not require user input)?
+download_data <- TRUE
+
+if(download_data == TRUE & file.exists(file_path) == FALSE) {
   # Download dryad repo in rdryad cache
   doi <- "10.5061/dryad.m905qfv5p"
   tmp_files <- rdryad::dryad_download(doi)[[doi]]
@@ -311,7 +322,7 @@ glmSurv_step1 <- lme4::glmer(survival ~ (MismTreat_noNeg + MismTreat_squared)*Ph
                              family = binomial, 
                              data = cat_data_surv,
                              na.action = "na.fail",
-                             control = glmerControl(calc.derivs = F)) # helps convergence
+                             control = glmerControl(calc.derivs = FALSE)) # helps convergence
 # Check model assumptions
 performance::check_model(glmSurv_step1)
 
@@ -343,8 +354,8 @@ glmSurv_res <- summary(glmSurv_final)$coefficients %>% as.data.frame()
 
 # Save model outputs
 if(save_tables) {
-  write.csv(glmSurv_res, file = "output/result/output_Surv_glmer.csv", row.names = T)
-  write.csv(rbind(anovaSurv_step1, anovaSurv_step2), file = "output/result/anova_Surv_glmer.csv", row.names = T)
+  write.csv(glmSurv_res, file = "output/result/output_Surv_glmer.csv", row.names = TRUE)
+  write.csv(rbind(anovaSurv_step1, anovaSurv_step2), file = "output/result/anova_Surv_glmer.csv", row.names = TRUE)
 }
 
 
@@ -465,7 +476,7 @@ weight <- Rmisc::summarySE(cat_data_pupa,
 # and standard deviations cannot be computed
 
 # Set position of labels for each pupa weight 
-weight$pos <- ifelse(is.na(weight$se) == T, 0, weight$se) 
+weight$pos <- ifelse(is.na(weight$se) == TRUE, 0, weight$se) 
 
 # View pupation weights for each mismatch day
 weight
@@ -557,9 +568,9 @@ lmPupa_res <- summary(lmPupa_final)$coefficients %>% as.data.frame()
 # Save model outputs
 if(save_tables) {
   write.csv(lmPupa_res, 
-            file = "output/result/output_PupaWeight_lmer.csv", row.names = T)
+            file = "output/result/output_PupaWeight_lmer.csv", row.names = TRUE)
   write.csv(rbind(anovaPupa_step1, anovaPupa_step2, anovaPupa_step3), 
-            file = "output/result/anova_PupaWeight_lmer.csv", row.names = T)
+            file = "output/result/anova_PupaWeight_lmer.csv", row.names = TRUE)
 }
 
 
@@ -582,11 +593,11 @@ pred_pupa <- Rmisc::summarySE(lmPupa_pred, measurevar = "pred", groupvars = c("M
 # The warning message occurs because at Mismatch = -4 sample size is N = 1 for both treatments
 # and standard deviations cannot be computed
 pred_pupa$samplesize <- weight$N
-pred_pupa$pos <- ifelse(is.na(pred_pupa$se) == T, 0, pred_pupa$se) # position of sample size labels
+pred_pupa$pos <- ifelse(is.na(pred_pupa$se) == TRUE, 0, pred_pupa$se) # position of sample size labels
 
 # Add predictions to raw weight figure
 p_weight <- raw_weight + 
-  geom_smooth(data = pred_pupa, aes(y = pred, col = PhotoTreat), se = F, method = lm) +
+  geom_smooth(data = pred_pupa, aes(y = pred, col = PhotoTreat), se = FALSE, method = lm) +
   # Add labels for sample size:
   geom_text(data = filter(weight, PhotoTreat == "Changing"), aes(label = N, y = PupaWeight-pos-1.5), col = "black", size = 4, fontface = "bold") +
   geom_text(data = filter(weight, PhotoTreat == "Constant"), aes(label = N, y = PupaWeight+pos+2.3), col = "black", size = 4, fontface = "bold")
@@ -724,7 +735,7 @@ head(RelFit_means)
 
 # Save RelFit_means
 if(save_tables) { 
-  write.csv(RelFit_means, file = "output/result/RelFitness_rev.csv", row.names = F)
+  write.csv(RelFit_means, file = "output/result/RelFitness_rev.csv", row.names = FALSE)
 }
  
 
@@ -822,3 +833,6 @@ if(save_tables) {
 
 # End of script
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+## Automatically turn script into Rmarkdown file but do not yet knit
+knitr::spin("scripts/1a_CatFoodExp2021_analysis_fitness.R", knit = FALSE)
