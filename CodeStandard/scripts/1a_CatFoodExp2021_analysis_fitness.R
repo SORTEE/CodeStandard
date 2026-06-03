@@ -15,19 +15,34 @@
 
 
 ## Load R environment --------------------------------------------------------------------------
-# This restores the versions of packages used in the original analysis.
-renv::restore()
+# NB: the user needs to have Rtools installed to be able to download the package versions 
+#     that are only available as source files  
 
-# NB: this only works well when the R version used is the same as recorded in the renv.lock file 
-# (here: v.4.2.2)
-# NB: the user needs to have Rtools installed to be able to download some package versions that are 
-# only available as source files  
+# Want to use renv to restore the versions of packages used in the original analysis?
+USE_RENV <- FALSE # TRUE = Yes, FALSE = No 
+
+if(USE_RENV) { 
+  renv::restore()
+  # NB: this only works well when the R version used is the same as recorded 
+  #     in the renv.lock file (here: v.4.5.2)
+  # if renv::restore() fails, restart R, turn USE_RENV to FALSE and try again
+} else {
+  # when renv::restore() fails, delete the renv.lock file
+  file.remove("renv.lock")
+  
+  # and create and record your own environment
+  renv::init()
+}
 
 # If error when downloading digest :
   # (this happens, check https://stackoverflow.com/questions/48548767/can-not-download-digest-package-in-r)
-if(!require(digest))
+if(!require(digest)) {
   install.packages('digest', repos = 'http://cran.us.r-project.org')
+}
 
+# Check that installation of packages worked
+renv::status()
+# NB: resolve any issues by following renv advice
 
 # Setting seed for random processes
 set.seed(147)
@@ -77,8 +92,7 @@ if(!dir.exists("data")) dir.create("data")
 file_name <- "CatFood2021_deposit.csv"
 file_path <- file.path("data", file_name)
 
-# If not, automatically download it from Dryad
-  # -> that way, this does not require user input
+# If not, automatically download it from Dryad (does not require user input)
 if(file.exists(file_path) == F) {
   # Download dryad repo in rdryad cache
   doi <- "10.5061/dryad.m905qfv5p"
@@ -89,6 +103,7 @@ if(file.exists(file_path) == F) {
           "data", 
           overwrite = TRUE)
 }
+# or download the data file yourself (see link above) and place it in the data/ folder
 
 
 ## Load data -----------------------------------------------------------------------------------
