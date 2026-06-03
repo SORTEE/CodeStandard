@@ -15,6 +15,9 @@ Note: *This is an updated partial version from the [original repository](https:/
     |- fig
     |- result
   |- renv
+    |- .gitignore
+    |- activate.R
+    |- settings.json
   |- scripts
     |- 1a_CatFoodExp2021_analysis_fitness.R
   |- .Rprofile
@@ -42,8 +45,9 @@ Note: *This is an updated partial version from the [original repository](https:/
 | `data/CatFood2021_deposit.csv` | Dataset from the 2021 winter moth caterpillar feeding experiment deposited at Dryad <https://doi.org/10.5061/dryad.m905qfv5p> |
 | [`scripts/1a_CatFoodExp2021_analysis_fitness.R`](scripts/1a_CatFoodExp2021_analysis_fitness.R) | `R` script to reproduce the analysis and visualization of the 2021 winter moth caterpillar feeding experiment |
 | [`.Rprofile`](.Rprofile) | A configuration file containing `R` code that is automatically executed every time an `R` session starts |
+| [`renv/*`](renv/) | Files created by the R package renv (an environment manager) to store and active the project's environment settings |
 | [`.gitignore`](.gitignore) | A plain text file used to specify files that we do not want Git to track (i.e. that Git should ignore) |
-| [`*.gitkeep`] | Empty placeholder file to make sure git will track directory structure but not directory content of the data and output folders |
+| `*.gitkeep` | Empty placeholder file to make sure git will track directory structure but not directory content of the data and output folders |
 | [`CITATION.cff`](CITATION.cff) | Machine-readable file that specifies how to cite this repository |
 | [`CodeStandard.Rproj`](CodeStandard.Rproj) | A project file used by RStudio to define and manage an `R` project |
 | [`LICENSE`](LICENSE) | License file specifying how this repository can be reused |
