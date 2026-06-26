@@ -165,7 +165,7 @@ nrow(cat_data)
 xtabs(~ Treatment + MotherID, data = cat_data)
 # specific clutch x treatment combinations with < 3 individuals:
 # e.g., ConstDay0 x MotherID=16612 has 0; several others have 2 instead of 3
-# some individuals lacked survival or weight data
+# i.e., some individuals lacked survival or weight data
 
 nr_pupated <- sum(is.na(cat_data_raw$DeadAprilDay)) # number of caterpillars that pupated
 nr_died <- sum(is.na(cat_data_raw$PupationAprilDay)) # number of caterpillars that died before pupation
@@ -183,7 +183,7 @@ test_that("Died before adulthood", {
 
 # Number of cluches per Area
 table(cat_data[!duplicated(cat_data$MotherID), "AreaShortName"])
-# should match the counts given in section 2.b Phenological mismatch experiment
+# to report sample sizes in section 2.b Phenological mismatch experiment
 
 
 ## <Survival analysis> ----------------------------------------------------------------------------
@@ -244,7 +244,7 @@ test_that("Treatment_releveled reflects Treatment", {
 test_that("MismTreat_squared equals MismTreat_noNeg squared", {
   expect_true(all(cat_data_surv$MismTreat_squared == cat_data_surv$MismTreat_noNeg^2))
   })
-test_that("Caterpillar ID are unique", {
+test_that("Caterpillar IDs are unique", {
   expect_equal(length(unique(cat_data_surv$CaterpillarID)), nrow(cat_data_surv))
   })
 
@@ -519,11 +519,12 @@ if(save_figures) {
 # fixed effects for mismatch treatment, mismatch treatment squared, and photoperiod,
 # and interactions between mismatch and photoperiod treatments.
 lmPupa_step1 <- lmerTest::lmer(PupaWeight ~ (MismTreat_noNeg + MismTreat_squared)*PhotoTreat + (1 | MotherID), 
-                               data=cat_data_pupa)
+                               data = cat_data_pupa)
 
 # Check model assumptions
 performance::check_model(lmPupa_step1)
-# Line 20 is a clear outlier.
+# Row 20 individual is a clear outlier.
+cat_data_pupa[20,]
 
 # Use ANOVA to check significance of covariates (here: interactions not significant)
 anovaPupa_step1 <- anova(lmPupa_step1) %>% as.data.frame() 
@@ -594,6 +595,7 @@ head(lmPupa_pred)
 pred_pupa <- Rmisc::summarySE(lmPupa_pred, measurevar = "pred", groupvars = c("MismTreat", "PhotoTreat")) 
 # The warning message occurs because at Mismatch = -4 sample size is N = 1 for both treatments
 # and standard deviations cannot be computed
+
 pred_pupa$samplesize <- weight$N
 pred_pupa$pos <- ifelse(is.na(pred_pupa$se) == TRUE, 0, pred_pupa$se) # position of sample size labels
 
