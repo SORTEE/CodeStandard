@@ -113,6 +113,7 @@ if(download_data == TRUE & file.exists(file_path) == FALSE) {
   # Download dryad repo in rdryad cache
   doi <- "10.5061/dryad.m905qfv5p"
   tmp_files <- rdryad::dryad_download(doi)[[doi]]
+  # use deposits::deposit_download_file() for zenodo and figshare: https://github.com/ropenscilabs/deposits
 
   # Copy desired file to data folder
   file.copy(tmp_files[grepl(file_name, tmp_files)], 
