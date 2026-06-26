@@ -38,6 +38,7 @@ if(install_needed) {
     
     # and create and record your own environment
     renv::init()
+    renv::snapshot()
   }
   
   # If error when downloading digest :
@@ -56,7 +57,7 @@ if(install_needed) {
 renv::status()
 # NB: resolve any issues following renv instructions
 
-# Setting seed for random processes
+# Setting seed to ensure random processes are reproducible
 set.seed(147)
 
 
