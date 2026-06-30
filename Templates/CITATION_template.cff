@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+message: "If you use this repository, please cite it as below."
+authors:
+  - family-names: "[AUTHOR1_FAMILYNAME]"
+    given-names: "[AUTHOR1_GIVENNAME]"
+  - family-names: "[AUTHOR2_FAMILYNAME]"
+    given-names: "[AUTHOR2_GIVENNAME]"
+  - family-names: "[AUTHOR3_FAMILYNAME]"
+    given-names: "[AUTHOR3_GIVENNAME]"
+title: "[YOUR_TITLE]"
+version: [VERSION_NUMBER]
+doi: [DATACODE_DOI]
+date-released: [RELEASE_DATE]
+url: "[OTHER_RELEVANT_LINK]"
+license: [DATACODE_LICENSE]
