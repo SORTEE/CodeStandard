@@ -81,6 +81,7 @@ library(rmarkdown)         # Used to automatically turn .Rmd into HTML file
 
 # set to TRUE to save figures (as .png files)
 save_figures <- TRUE
+
 # set to TRUE to save tables (as .csv files)
 save_tables <- TRUE
 
@@ -121,7 +122,7 @@ if(download_data == TRUE & file.exists(file_path) == FALSE) {
           "data", 
           overwrite = TRUE)
 }
-# or download the data file yourself (see doi link above) and place it in the data/ folder
+# or manually place the data file (see doi link above) in data/
 
 
 ## Load data -----------------------------------------------------------------------------------
@@ -133,9 +134,10 @@ cat_data_raw <- read.csv("data/CatFood2021_deposit.csv")
 
 # Quick checks of the data's structure
 class(cat_data_raw) # object type
-head(cat_data_raw) # print the first 6 rows and the 19 columns
+head(cat_data_raw) # print the first 6 rows
 dim(cat_data_raw) # number of rows and columns
-str(cat_data_raw) # check variable classes summary(cat_data_raw)
+str(cat_data_raw) # check variable classes 
+summary(cat_data_raw) # dataset summary
 
 # renaming TubeID as MotherID to match the terminology used in the Statistical section of the paper
 cat_data <- cat_data_raw %>% dplyr::rename(MotherID = TubeID)
