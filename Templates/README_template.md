@@ -37,9 +37,9 @@
 
 | File name | Description |
 |-----------|-------------|
-| [`data/raw/`](data/raw/) | Raw input data (e.g. observed field counts) |
-| [`data/processed/`](data/processed/) | Processed input data (data that has been processed before analysis e.g. pixel brightness of images) |
-| [`output/`]() | Folders to store script generated results and figures |
+| `data/raw/` | Raw input data (e.g. observed field counts) |
+| `data/processed/` | Processed input data (data that has been processed before analysis e.g. pixel brightness of images) |
+| `output/` | Folders to store script generated results and figures |
 | [`scripts/script_template.R`](scripts/script_template.R) | Analysis script (template) |
 | [`.Rprofile`](.Rprofile) | A configuration file containing `R` code that is automatically executed every time an `R` session starts |
 | [`.gitignore`](.gitignore) | A plain text file used to specify files that we do not want Git to track (i.e. that Git should ignore) |
