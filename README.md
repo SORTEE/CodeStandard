@@ -50,5 +50,4 @@ If you use this repository, please cite:
 ## References
 
 Rodrigues et al. (2026). *A Code Standard for Ecology and Evolution*. Journal. [https://doi.org/[DOI]](https://doi.org/%5BDOI%5D){.uri}
-
 van Dis et al. (2023). *Phenological mismatch affects individual fitness and population growth in the winter moth*. Proceedings of the Royal Society B: Biological Sciences, 290(2005), 20230414. <https://doi.org/10.1098/rspb.2023.0414>
