@@ -44,11 +44,11 @@ Finally, we also share the structure that help us to review and implement this c
 
 If you use this repository, please cite:
 
-- **Article:** Rodrigues et al. (2023). *A Code Standard for Ecology and Evolution*. Journal. [https://doi.org/[DOI]](https://doi.org/%5BDOI%5D){.uri}
+- **Article:** Rodrigues et al. (2026). *A Code Standard for Ecology and Evolution*. Journal. [https://doi.org/[DOI]](https://doi.org/%5BDOI%5D){.uri}
 - **Code:** Author(s). (Year). *Repository title* [Computer software]. Code Repository. [https://doi.org/[DOI]](https://doi.org/%5BDOI%5D){.uri}
 
 ## References
 
-Rodrigues et al. (2023). *A Code Standard for Ecology and Evolution*. Journal. [https://doi.org/[DOI]](https://doi.org/%5BDOI%5D){.uri}
+Rodrigues et al. (2026). *A Code Standard for Ecology and Evolution*. Journal. [https://doi.org/[DOI]](https://doi.org/%5BDOI%5D){.uri}
 
 van Dis et al. (2023). *Phenological mismatch affects individual fitness and population growth in the winter moth*. Proceedings of the Royal Society B: Biological Sciences, 290(2005), 20230414. <https://doi.org/10.1098/rspb.2023.0414>
