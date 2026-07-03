@@ -45,7 +45,7 @@ Note: *This is an updated partial version from the [original repository](https:/
 | File name | Description |
 |-----------|-------------|
 | `data/CatFood2021_deposit.csv` | Dataset from the 2021 winter moth caterpillar feeding experiment deposited at Dryad <https://doi.org/10.5061/dryad.m905qfv5p> |
-| `[output/*`](output/) | Folders to store script generated results and figures |
+| `[output/*](output/)` | Folders to store script generated results and figures |
 | [`scripts/1a_CatFoodExp2021_analysis_fitness.R`](scripts/1a_CatFoodExp2021_analysis_fitness.R) | `R` script to reproduce the analysis and visualization of the 2021 winter moth caterpillar feeding experiment |
 | [`scripts/1a_CatFoodExp2021_analysis_fitness.Rmd`](scripts/1a_CatFoodExp2021_analysis_fitness.Rmd) | Rmarkdown file of 1a_CatFoodExp2021_analysis_fitness.R script automatically created by that script |
 | [`scripts/1a_CatFoodExp2021_analysis_fitness.html`](scripts/1a_CatFoodExp2021_analysis_fitness.html) | HTML render of the Rmarkdown file including the script's output |
