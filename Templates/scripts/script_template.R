@@ -1,81 +1,66 @@
 #### Analysis of <PROJECT NAME> ####
 
-# In this study, <brief description of study>.
-# <Important study details>.
-# <Experimental design>.
+## In this study, <brief description of study>.
+## <Important study details>.
+## <Experimental design>.
+
+################################################################################
+### GUIDELINES FOR RECORDING AND REPRODUCING THE ANALYSIS ENVIRONMENT
+###
+### We recommend using R package renv.
+###
+### Recommended workflow to record your R environment:
+###   renv::init()
+###   renv::snapshot()
+###
+### Recommended workflow to restore your R environment:
+###   renv::restore()
+###
+### This restores package versions recorded in a renv.lock file and helps
+### reproduce the original analysis environment.
+################################################################################
 
 
-# To run this script: open the R project in the main folder of this repository.
+################################################################################
+### GUIDELINES FOR COMMENTING YOUR SCRIPTS
+###
+### Comments should explain:
+###
+### - Why an operation is performed
+### - How it relates to the manuscript
+### - Important assumptions
+### - Data processing decisions
+###
+### Avoid comments that merely repeat the code.
+###
+### Good:
+### "Convert temperature to Kelvin because the model requires
+### absolute temperature"
+###
+### Poor:
+### "Add 273.15 to temperature"
+################################################################################
 
 
-## Setup ---------------------------------------------------------------------------------------
-# This section loads the required packages, reads in the data required for the analysis, and
-# provides some simple summaries of the data structure.
+
+## Setup -----------------------------------------------------------------------
+
+## This section loads the required packages, reads in the data required for the
+## analysis, and provides some simple summaries of the data structure.
+
+library(<package>) # <describe purpose of package in this script>
+library(<package>) # <describe purpose of package in this script>
 
 
-## Load R environment --------------------------------------------------------------------------
-# NB: the user needs to have Rtools installed to be able to download package versions
-#     that are only available as source files.
+## User configuration ----------------------------------------------------------
 
-# Need to install packages?
-install_needed <- TRUE
-
-# Want to use renv to restore the versions of packages used in the original analysis?
-use_renv <- TRUE
-
-# Install packages and set up environment
-if(install_needed) {
-  
-  if(use_renv) {
-    
-    renv::restore()
-    # NB: this only works well when the R version used is the same as recorded 
-    #     in the renv.lock file (here: v.4.5.2)
-    # if renv::restore() fails, restart R, turn USE_RENV to FALSE and try again
-  } else {
-    # when renv::restore() fails, delete the renv.lock file
-    file.remove("renv.lock")
-    
-    # and create and record your own environment
-    renv::init()
-    renv::snapshot()
-  }
-  
-  # Install any packages that renv misses
-  if(!require(<package1>)) renv::install("<package1>")
-  if(!require(<package2>)) renv::install("<package2>")
-  
-}
-
-# Check that analysis environment was set up well
-renv::status()
-# NB: resolve any issues following renv instructions
-
-# Setting seed to ensure random processes are reproducible
-set.seed(<seed>)
-
-
-## Load packages -------------------------------------------------------------------------------
-
-library(tidyverse)         # Used for data cleaning and manipulation (includes dplyr library)
-library(performance)       # Used to check model assumptions
-library(testthat)          # Used for unit tests
-library(knitr)             # Used to automatically turn script into .Rmarkdown file
-library(rmarkdown)         # Used to automatically turn .Rmd into HTML file
-library(<package>)         # <describe use of package in this script>
-
-...
-
-
-## User configuration --------------------------------------------------------------------------
-
-# set to TRUE to save figures
+## set to TRUE to save figures
 save_figures <- TRUE
 
-# set to TRUE to save tables
+## set to TRUE to save tables
 save_tables <- TRUE
 
-# create output directory if saving is enabled
+## create output directory if saving is enabled
 if(save_figures | save_tables) {
   
   if(!dir.exists("output")) dir.create("output")
@@ -85,203 +70,172 @@ if(save_figures | save_tables) {
 }
 
 
-## Download data ------------------------------------------------------------------------------
-# To run this script, the dataset '<filename>' needs to be downloaded from:
-# <repository or DOI>
-#
-# The dataset should be saved in the folder data/
-
-# Create folder to store the data
-if(!dir.exists("data")) dir.create("data")
-
-# Check if data is present in folder if not yet exists
-file_name <- "<filename>"
-file_path <- file.path("data", file_name)
-
-# If not, want to automatically download it from the repository (does not require user input)?
-download_data <- TRUE
-
-if(download_data == TRUE & file.exists(file_path) == FALSE) {
-  # Specify doi of the repository and download
-  doi <- "<doi>"
-  tmp_files <- rdryad::dryad_download(doi)[[doi]]
-  # use deposits::deposit_download_file() for zenodo and figshare: https://github.com/ropenscilabs/deposits
-  
-  # Copy desired file to data folder
-  file.copy(
-    tmp_files[grepl(file_name, tmp_files)],
-    "data",
-    overwrite = TRUE
-  )
-  
-}
-# or manually place the data file in data/
+## Load data -------------------------------------------------------------------
+data <- <add your code to read in the data>
 
 
-## Load data -----------------------------------------------------------------------------------
+## Data preparation -----------------------------------------------------------
 
-data_raw <- read.csv(file_path)
-
-
-## Data summary -------------------------------------------------------------------------------
-
-# Quick checks of the data's structure
-class(data_raw) # object type
-head(data_raw) # print the first 6 rows
-dim(data_raw) # number of rows and columns
-str(data_raw) # check variable classes
-summary(data_raw) # dataset summary
-
-# Additional notes on variables
-# ...
-
-# Check for outliers
-hist(data$<variable>)
-hist(data$<variable>)
-
-# Check sample sizes
-test_that("Sample size", {expect_equal(length(unique(data$<variable>)), <expected_sample_size>})
-
-# Expected sample size:
-# Actual sample size:
-
-# Check missing data
-xtabs(~ <factor1> + <factor2>, data = data)
-
-# Other applicable unit tests
-test_that("<description>", {
-  expect_equal(...)
-})
-
-
-## <Analysis section title> --------------------------------------------------------------------
-# This section analyses <analysis objective>.
-# The data is first prepared, then visualised.
-# Statistical models are fitted and predictions plotted.
-
-
-## Data preparation ---------------------------------------------------------------------------
+## Purpose:
+##
+## <Describe how the raw data are transformed into the final dataset
+## used for the analysis.>
 
 analysis_data <- data %>%
   mutate(...) %>%
   select(...) %>%
   filter(...)
 
-# Tests after data manipulation
-test_that("<description>", {
+## Reproducibility checks
+
+### Examples:
+### - expected sample size
+### - expected number of sites
+### - expected number of taxa
+### - expected factor levels
+### - absence of duplicated observations
+### - successful data joins
+
+test_that("<description of expected property>", {
   expect_equal(...)
 })
 
-# Check structure of cleaned data
+## Check structure of processed dataset
+
 head(analysis_data)
-levels(analysis_data$factor)
+str(analysis_data)
+summary(analysis_data)
+
+## <Add additional notes relevant for interpretation>
+##
+## ...
 
 
-## Visualize raw data --------------------------------------------------------------------------
+## Summary statistics ------------------------------------
 
-# Aggregate the data in a meaningful way for visualization
-summary_data <- aggregate(...)
+## <Describe the purpose of the summary statistics.>
+##
+## i.e. These analyses should help understand the data structure and
+## identify potential issues but should not replace formal analyses.
+
+summary_data <- ...
+
 head(summary_data)
 
 
-## Raw data figure -----------------------------------------------------------------------------
+## Exploratory figure ---------------------------------------------------------
 
-raw_plot <- ggplot(...) +
+exploratory_plot <- ggplot(...) +
   ...
 
-# View figure
-raw_plot
+## View figure
 
-# Save to outputs
+exploratory_plot
+
+## Save figure
+
 if(save_figures) {
-  ggsave(filename = "output/fig/<figure_name>.png",
-         plot = raw_plot,
-         width = 200,
-         height = 150,
-         units = "mm",
-         dpi = "print")
+  
+  ggsave(
+    filename = "output/fig/<figure_name>.png",
+    plot = exploratory_plot,
+    width = 200,
+    height = 150,
+    units = "mm",
+    dpi = "print"
+  )
+  
 }
 
 
-## Fit statistical model -----------------------------------------------------------------------
+## Primary analysis -----------------------------------------------------------
 
-# <Describe chosen model>
-model_step1 <- <model_function>(...)
+## Analysis objective:
+##
+## Response variable(s):
+## Explanatory variable(s):
+## Assumptions:
+##
+## Relation to manuscript:
+## Figure/Table:
+##
+## <Explain WHY this analysis is performed.>
 
-# Check model assumptions
-performance::check_model(model_step1)
+analysis_result <- <analysis_function>(...)
 
-# Use ANOVA to check significance of covariates
-anova_step1 <- ...
+## Diagnostics and validation
 
-# Label model
-anova_step1$mod <- "<model_name>"
+### Examples:
+### - model assumptions
+### - convergence checks
+### - simulation diagnostics
+### - sensitivity analyses
+### - cross-validation
+### - posterior predictive checks
 
-# Refit model dropping terms
-model_step2 <- update(...)
+<diagnostic_code>
+  
+## View results
+  
+summary(analysis_result)
 
-# Test significance of updated model with ANOVA
-anova_step2 <- ...
+## Extract results into a table
 
-# Pick final model
-model_final <- model_step2
+analysis_results <- ...
 
-# Check model assumptions
-performance::check_model(model_final)
+## Save numerical output
 
-# View model summary 
-summary(model_final)
-
-# Extract estimated coefficients as dataframe
-model_results <- summary(model_final)$coefficients %>% as.data.frame()
-
-# Save model outputs
 if(save_tables) {
-  write.csv(model_results, file = "output/result/<model_results>.csv", row.names = TRUE)
+  
+  write.csv(
+    analysis_results,
+    file = "output/result/<analysis_results>.csv",
+    row.names = TRUE
+  )
+  
 }
 
 
-## Predict -------------------------------------------------------------------------------------
+## Derived outputs ------------------------------------------------------------
 
-# Create input data for prediction
-prediction_data <- ...
+### Optional section
+###
+### Examples:
+### - predictions
+### - estimated effects
+### - ordination scores
+### - diversity metrics
+### - simulations
+### - summary statistics
+### - scenario projections
+###
+### Remove this section if not applicable.
 
-# Predict variable of interest
-prediction_data$pred <- predict(model_final, newdata = prediction_data, type = "<prediction type>")
+derived_output <- ...
 
-# View first rows of dataset
-head(prediction_data)
+head(derived_output)
 
 
-## Predicted vs observed figure ---------------------------------------------------------------------------
+## Final figure or output -----------------------------------------------------
 
-prediction_plot <- raw_plot +
+final_plot <- ggplot(...) +
   ...
 
-# View plot
-prediction_plot
+final_plot
 
-# Save the figure
 if(save_figures) {
-  ggsave(filename = "output/fig/<prediction_figure>.png",
-         plot = prediction_plot,  
-         width = 200,
-         height = 150,
-         units = "mm",
-         dpi = "print"
-         )
+  
+  ggsave(
+    filename = "output/fig/<final_figure>.png",
+    plot = final_plot,
+    width = 200,
+    height = 150,
+    units = "mm",
+    dpi = "print"
+  )
+  
 }
 
+## End of analysis
 
-# End of <analysis section> / script
-## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-## Quick and dirty: automatically turn script into Rmarkdown file but do not yet knit
-
-knitr::spin("scripts/<analysis_script>.R", knit = FALSE)
-
-# Converted .Rmd file to HTML in RStudio by:
-# 1. Opening generated .Rmd file
-# 2. Removing the final script lines
-# 3. Knit -> Knit Directory -> Project directory
-# 4. Knit -> Knit to HTML
+### +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

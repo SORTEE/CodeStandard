@@ -56,7 +56,7 @@ We share the `Hackathon` repository to ensure transparency on how the Code Stand
 ### `Templates` folder
 The [`Templates`](Templates/) folder is a repository template including clear folder structure, a [README file template](Templates/README_template.md), [analysis script template](Templates/scripts/script_template.R), and more, to help you implement best practices for code sharing in your own coding. 
 
-You can also use `git` to only download the Templates folder to your machine to get started:
+You can also use `git` to only download the `Templates` folder to your machine to get started:
 ```
 # Ask git to clone the CodeStandard repository to your machine 
 # but including only the bare essentials (root README and .gitignore):
