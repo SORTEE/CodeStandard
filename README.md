@@ -39,8 +39,8 @@ You can use [`{git}`](https://git-scm.com/) to download the full repository to y
 git clone https://github.com/SORTEE/CodeStandard.git
 ```
 
-### `Code Standard` folder
-In [`CodeStandard`](CodeStandard/) you will find the example code and support documentation implementating Open, Reliable and Transparent (ORT) best practices for code sharing.
+### `CodeStandard` folder
+In [`CodeStandard`](CodeStandard/) you will find the example code and support documentation implementing Open, Reliable and Transparent (ORT) best practices for code sharing.
 
 For this practical example, we chose a relatively simple and common ecology and evolution analysis that constructs a fitness curve from experimental data, coming from a published paper (van Dis et al. 2023). As such, [the Code Standard analysis script](CodeStandard/scripts/1a_CatFoodExp2021_analysis_fitness.R) offers all basic steps in an analysis workflow: loading required packages, exploring the data, data preparation, fitting a model, summarizing results and creating visualization outputs. 
 
@@ -49,10 +49,14 @@ In addition to the analysis script, the `CodeStandard` also implements best prac
 *The `CodeStandard` folder is intended to serve as a reference for good practices in code sharing. The place you return to whenever you need an example of how to implement an ORT practice in your own coding.*
 
 ### `Hackathon` folder
-We also share the [`Hackathon`](Hackathon/) repository that was used to create the Code Standard. In this folder, you can find [the original code and supporting documentation](Hackathon/00_base_code), a folder for each of the focus areas of code review (i.e. Reported, Run, Reliable, Reproducible, Organisation & Structure, and Other considerations) and other auxiliary documentation used for the Hackathon. We share the `Hackathon` repository to ensure transparency on how the Code Standard was created, and to allow for the intermediate files and Hackathon structure to be used for teaching purposes. For example, it can be used as a reference to organize your own hackathon to create Code Standards for other often-used analyses in Ecology and Evolution.
+We also share the [`Hackathon`](Hackathon/) repository that was used to create the Code Standard. In this folder, you can find [the original code and supporting documentation](Hackathon/00_base_code), as well as folders for each of the focus areas of code review (i.e. Reported, Run, Reliable, Reproducible, Organisation & Structure, and Other considerations) and other auxiliary documentation used during the hackathon. 
+
+We share the `Hackathon` repository to ensure transparency on how the Code Standard was created, and to allow for the intermediate files and Hackathon structure to be used for teaching purposes. For example, it can be used as a reference to organize your own hackathon to create code standards for other often-used analyses in Ecology and Evolution.
 
 ### `Templates` folder
-The [`Templates`](Templates/) folder is a repository template including clear folder structure, a [README file template](Templates/README_template.md), [analysis script template](Templates/scripts/script_template.R), and more, to help you implement best practices for code sharing in your own coding. You can also use `git` to only download the Templates folder to your machine to get started:
+The [`Templates`](Templates/) folder is a repository template including clear folder structure, a [README file template](Templates/README_template.md), [analysis script template](Templates/scripts/script_template.R), and more, to help you implement best practices for code sharing in your own coding. 
+
+You can also use `git` to only download the Templates folder to your machine to get started:
 ```
 # Ask git to clone the CodeStandard repository to your machine 
 # but including only the bare essentials (root README and .gitignore):
@@ -69,7 +73,7 @@ git sparse-checkout set Templates/
 If you use this repository, please cite:
 
 - **Paper:** Rodrigues et al. (2026). *A Code Standard for Ecology and Evolution*. Preprint. <https://doi.org/[DOI]>
-- **Code:** Author(s). (Year). *Repository title* [Computer software]. Code Repository. <https://doi.org/[DOI]>
+- **Code:** Rodrigues et al. (2026). *A Code Standard for Ecology and Evolution* [Computer software]. Zenodo. <https://doi.org/[DOI]>
 
 
 ## References
