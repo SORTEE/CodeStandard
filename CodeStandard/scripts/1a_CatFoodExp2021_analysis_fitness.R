@@ -846,6 +846,6 @@ knitr::spin("scripts/1a_CatFoodExp2021_analysis_fitness.R", knit = FALSE)
 
 # Converted .Rmd file to HTML in Rstudio by:
 # 1. Opening generated .Rmd file
-# 2. Removing last script lines for turning script into .Rmd file (lines 842-850)
+# 2. Removing last script lines for turning script into .Rmd file (lines >846)
 # 3. Selected Knit -> Knit Directory -> Project directory
 # 4. Selected Knit -> Knit to HTML

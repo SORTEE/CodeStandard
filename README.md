@@ -62,7 +62,7 @@ You can also use `git` to only download the Templates folder to your machine to 
 # but including only the bare essentials (root README and .gitignore):
 git clone --filter=blob:none --sparse https://github.com/SORTEE/CodeStandard.git
 
-# Move into the created folder and download the Templates/ folder from the repository:
+# Move into the created folder and download the `Templates` folder from the repository:
 cd CodeStandard
 git sparse-checkout set Templates/
 ```

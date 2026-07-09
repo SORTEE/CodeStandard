@@ -500,12 +500,14 @@ library(testthat)          # Used for unit tests</code></pre>
 ## 
 ##     mutate</code></pre>
 <pre class="r"><code>library(knitr)             # Used to automatically turn script into .Rmarkdown file
+library(rmarkdown)         # Used to automatically turn .Rmd into HTML file
 
 
 ## User configuration ----------------------------------------------------------------------------
 
 # set to TRUE to save figures (as .png files)
 save_figures &lt;- TRUE
+
 # set to TRUE to save tables (as .csv files)
 save_tables &lt;- TRUE
 
@@ -546,7 +548,7 @@ if(download_data == TRUE &amp; file.exists(file_path) == FALSE) {
           &quot;data&quot;, 
           overwrite = TRUE)
 }
-# or download the data file yourself (see doi link above) and place it in the data/ folder
+# or manually place the data file (see doi link above) in data/
 
 
 ## Load data -----------------------------------------------------------------------------------
@@ -559,7 +561,7 @@ cat_data_raw &lt;- read.csv(&quot;data/CatFood2021_deposit.csv&quot;)
 # Quick checks of the data&#39;s structure
 class(cat_data_raw) # object type</code></pre>
 <pre><code>## [1] &quot;data.frame&quot;</code></pre>
-<pre class="r"><code>head(cat_data_raw) # print the first 6 rows and the 19 columns</code></pre>
+<pre class="r"><code>head(cat_data_raw) # print the first 6 rows</code></pre>
 <pre><code>##   ExperimentName YearCatch YearHatch TubeID AreaShortName Site Tree
 ## 1 CatFoodExp2021      2020      2022  16331            WA    1    1
 ## 2 CatFoodExp2021      2020      2022  16331            WA    1    1
@@ -590,7 +592,7 @@ class(cat_data_raw) # object type</code></pre>
 ## 6    &lt;NA&gt;</code></pre>
 <pre class="r"><code>dim(cat_data_raw) # number of rows and columns</code></pre>
 <pre><code>## [1] 976  19</code></pre>
-<pre class="r"><code>str(cat_data_raw) # check variable classes summary(cat_data_raw)</code></pre>
+<pre class="r"><code>str(cat_data_raw) # check variable classes </code></pre>
 <pre><code>## &#39;data.frame&#39;:    976 obs. of  19 variables:
 ##  $ ExperimentName     : chr  &quot;CatFoodExp2021&quot; &quot;CatFoodExp2021&quot; &quot;CatFoodExp2021&quot; &quot;CatFoodExp2021&quot; ...
 ##  $ YearCatch          : int  2020 2020 2020 2020 2020 2020 2020 2020 2020 2020 ...
@@ -611,6 +613,47 @@ class(cat_data_raw) # object type</code></pre>
 ##  $ AdultWeight_ingrams: num  NA NA NA NA NA NA NA NA NA NA ...
 ##  $ Sex                : chr  NA NA NA NA ...
 ##  $ Remarks            : chr  NA NA NA NA ...</code></pre>
+<pre class="r"><code>summary(cat_data_raw) # dataset summary</code></pre>
+<pre><code>##  ExperimentName       YearCatch      YearHatch        TubeID     
+##  Length:976         Min.   :2020   Min.   :2022   Min.   :16331  
+##  Class :character   1st Qu.:2020   1st Qu.:2022   1st Qu.:16448  
+##  Mode  :character   Median :2020   Median :2022   Median :16470  
+##                     Mean   :2020   Mean   :2022   Mean   :16527  
+##                     3rd Qu.:2020   3rd Qu.:2022   3rd Qu.:16612  
+##                     Max.   :2020   Max.   :2022   Max.   :16871  
+##                                                                  
+##  AreaShortName           Site            Tree        NovemberDate 
+##  Length:976         Min.   :1.000   Min.   : 1.00   Min.   :16.0  
+##  Class :character   1st Qu.:2.000   1st Qu.: 2.00   1st Qu.:23.0  
+##  Mode  :character   Median :3.500   Median : 6.00   Median :23.0  
+##                     Mean   :3.504   Mean   : 9.06   Mean   :26.6  
+##                     3rd Qu.:5.000   3rd Qu.:10.00   3rd Qu.:30.0  
+##                     Max.   :7.000   Max.   :38.00   Max.   :40.0  
+##                                                                   
+##     ClutchID     CaterpillarID   Treatment         HatchAprilDay  
+##  Min.   :33359   Min.   :5751   Length:976         Min.   :29.00  
+##  1st Qu.:33417   1st Qu.:5995   Class :character   1st Qu.:31.00  
+##  Median :33478   Median :6238   Mode  :character   Median :33.00  
+##  Mean   :33498   Mean   :6239                      Mean   :33.37  
+##  3rd Qu.:33540   3rd Qu.:6482                      3rd Qu.:36.00  
+##  Max.   :34364   Max.   :6728                      Max.   :38.00  
+##                                                                   
+##   DeadAprilDay   PupationAprilDay PupaWeight_ingrams  AdultNovDate  
+##  Min.   :50.00   Min.   :63.00    Min.   :0.01100    Min.   :31.00  
+##  1st Qu.:50.00   1st Qu.:70.00    1st Qu.:0.02700    1st Qu.:36.00  
+##  Median :52.00   Median :72.00    Median :0.03700    Median :40.00  
+##  Mean   :55.18   Mean   :72.15    Mean   :0.03628    Mean   :42.36  
+##  3rd Qu.:58.00   3rd Qu.:75.00    3rd Qu.:0.04400    3rd Qu.:47.25  
+##  Max.   :91.00   Max.   :84.00    Max.   :0.07600    Max.   :60.00  
+##  NA&#39;s   :346     NA&#39;s   :630      NA&#39;s   :630        NA&#39;s   :962    
+##  AdultWeight_ingrams     Sex              Remarks         
+##  Min.   :0.00800     Length:976         Length:976        
+##  1st Qu.:0.01400     Class :character   Class :character  
+##  Median :0.01650     Mode  :character   Mode  :character  
+##  Mean   :0.01871                                          
+##  3rd Qu.:0.02375                                          
+##  Max.   :0.03500                                          
+##  NA&#39;s   :962</code></pre>
 <pre class="r"><code># renaming TubeID as MotherID to match the terminology used in the Statistical section of the paper
 cat_data &lt;- cat_data_raw %&gt;% dplyr::rename(MotherID = TubeID)
 
