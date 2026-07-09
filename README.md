@@ -1,16 +1,15 @@
 # A Code Standard for Ecology and Evolution
 
-**Authors: Arthur V. Rodrigues, Cecilia Baldoni, Mattia Ghilardi, Saoirse Kelleher, Abhishek Kumar, Martin Luquet, Charlotte Recapet, Kevin R. Bairos-Novak, Giulia Masoero, Matthieu Paquet, Alfredo Sánchez-Tójar, Saeed Shafiei Sabet, Gabe Winter & Natalie E. van Dis.**
+**Authors**: Arthur V. Rodrigues, Cecilia Baldoni, Mattia Ghilardi, Saoirse Kelleher, Abhishek Kumar, Martin Luquet, Charlotte Recapet, Kevin R. Bairos-Novak, Giulia Masoero, Matthieu Paquet, Alfredo Sánchez-Tójar, Saeed Shafiei Sabet, Gabe Winter & Natalie E. van Dis
 
-The code standard is a piece of R code with accompanying metadata files that can be used as an accessible and easy way to implement transparent and reproducible practices in your own coding by example. To enable easy implementation of Open, Reliable, and Transparent (ORT) best practices for code sharing, we also offer a repository template for reuse.
+The [Code Standard](CodeStandard/) is a piece of R code with accompanying metadata files that can be used as an accessible and easy way to implement transparent and reproducible practices in your own coding by example. To enable easy implementation of Open, Reliable, and Transparent (ORT) best practices for code sharing, we also offer a number of [Templates](Templates/) that you can download to get started with preparing your code for sharing, including a [repository template](Templates/), [README file template](Templates/README_template.md) and [R script template](Templates/scripts/script_template.R).
 
-This work was created by members of the Society for Open, Reliable, and Transparent Ecology and Evolution (SORTEE), after reviewing a existing code coming from a published paper and discussing good code sharing practices in Ecology and Evolution (See details in Rodrigues et al. 2026) . Here, you find the Code Standard, Templates for easy implementation and the structure of the Hackathon that we designed to produce this code standard.
+The Code Standard was created by members of the Society for Open, Reliable, and Transparent Ecology and Evolution (SORTEE), coming together as a community to discuss good code sharing practices in Ecology and Evolution as part of a [Hackathon](Hackathon/) to review and rewrite an existing piece of R code coming from a published paper (see details in Rodrigues et al. 2026).
 
-We ranked the Top 10 Open, Reliable and Transparent (ORT) practices for code sharing in Ecology and Evolution (Rodrigues et al. 2026).
+The Top10 Open, Reliable and Transparent (ORT) practices that we consider to be essential for code sharing in Ecology and Evolution and beyond (Rodrigues et al. 2026) are:
 
-|  |  |  |
-|------------------------|------------------------|------------------------|
-| **Rank** | **Topic** | **ORT practice** |
+| Rank | Topic | ORT practice |
+|------|-------|--------------|
 | 1 | Reported | Ensure that shared code matches methods description in the paper |
 | 2 | Reported, Reproducible | Record and report required softwares, packages and their versions |
 | 3 | Organisation & Structure | Have code with a clear structure |
@@ -22,6 +21,7 @@ We ranked the Top 10 Open, Reliable and Transparent (ORT) practices for code sha
 | 9 | Run | Use R package namespaces for essential functions and function names that overlap between packages. (e.g. `lme4::glmer()`) |
 | 10 | Reproducible | Ensure that the whole analysis workflow is code-based and self-contained |
 
+
 ## How to use this repository
 
 This repository has three folders, with its respective README files:
@@ -32,22 +32,37 @@ This repository has three folders, with its respective README files:
   |- Templates
 ```
 
-In `CodeStandard` you will find the example code and support documentation implementating Open, Reliable and Transparent (ORT) best practices for code sharing.
+You can use [`git`](https://git-scm.com/) to download the full repository to your machine:
+```
+git clone https://github.com/SORTEE/CodeStandard.git
+```
 
-For this practical example, we chose a relatively simple and common ecology and evolution analysis. The analysis script construct a fitness curve from experimental data and is part of a published paper (van Dis et al. 2023). As such, it offers all basic steps in an analysis workflow: loading required packages, exploring the data, data preparation, fitting a model, summarizing results and creating visualization outputs. In addition to the analysis script, the `CodeStandard` implement best practices for code support documentation, in reproducibility, ensuring correct package versions via `{renv}`, and repository organization and structuring. **The `CodeStandard` repository is intended to serve as a reference for good practice in code sharing**. It can be your home base for code sharing. The place where you return to see how you could implement an ORT good practice.
+In [`CodeStandard`](CodeStandard/) you will find the example code and support documentation implementating Open, Reliable and Transparent (ORT) best practices for code sharing.
 
-To facilitate the implementation of this best practices you can use `Templates` folder. There you will find a template structure for the repository, with template README file and template script.
+For this practical example, we chose a relatively simple and common ecology and evolution analysis that constructs a fitness curve from experimental data, coming from a published paper (van Dis et al. 2023). As such, [the Code Standard analysis script](CodeStandard/scripts/1a_CatFoodExp2021_analysis_fitness.R) offers all basic steps in an analysis workflow: loading required packages, exploring the data, data preparation, fitting a model, summarizing results and creating visualization outputs. In addition to the analysis script, the `CodeStandard` also implements best practices for code support documentation including recording software versions via [`{renv}`](CodeStandard/renv.lock), using an appropriate [folder structure](CodeStandard/), and clear and complete documentation (e.g. a clear [README file](CodeStandard/README.md)). *The `CodeStandard` repository is intended to serve as a reference for good practices in code sharing. The place you return to whenever you need an example of how to implement an ORT practice in your own coding.*
 
-Finally, we also share the structure that help us to review and implement this code standard. In the folder `Hackathon`, you find the base code, the separation in topics for code review, and the auxiliary documentation used for the Hackathon. We share this to ensure transparency in the production of the Code Standard, as well as it may serve as a reference for groups that want to implement a Code Standard that best fit they current analysis workflow.
+We also share the [`Hackathon`](Hackathon/) repository that was used to create the Code Standard. In this folder, you can find [the original code and supporting documentation](Hackathon/00_base_code), a folder for each of the focus areas of code review (i.e. Reported, Run, Reliable, Reproducible, Organisation & Structure, and Other considerations) and other auxiliary documentation used for the Hackathon. We share the `Hackathon` repository to ensure transparency on how the Code Standard was created, and to allow for the intermediate files and Hackathon structure to be used for teaching purposes. For example, it can be used as a reference to organize your own hackathon to create Code Standards for other often-used analyses in Ecology and Evolution.
+
+In [`Templates`](Templates/) you can find a repository template including clear folder structure, a README file template, analysis script template, and more, to help you implement best practices for code sharing in your own coding. You can also use `git` to only download the Templates folder to your machine to get started:
+```
+# Ask git to clone the CodeStandard repository to your machine but including only the bare essentials (root README and .gitignore):
+git clone --filter=blob:none --sparse https://github.com/SORTEE/CodeStandard.git
+
+# Move into the created folder and download the Templates/ folder from the repository:
+cd CodeStandard
+git sparse-checkout set Templates/
+```
+
 
 ## Citation
 
 If you use this repository, please cite:
 
-- **Article:** Rodrigues et al. (2026). *A Code Standard for Ecology and Evolution*. Journal. [https://doi.org/[DOI]](https://doi.org/%5BDOI%5D){.uri}
-- **Code:** Author(s). (Year). *Repository title* [Computer software]. Code Repository. [https://doi.org/[DOI]](https://doi.org/%5BDOI%5D){.uri}
+- *Paper:* Rodrigues et al. (2026). *A Code Standard for Ecology and Evolution*. Preprint. <https://doi.org/[DOI]>
+- *Code:* Author(s). (Year). *Repository title* [Computer software]. Code Repository. <https://doi.org/[DOI]>
+
 
 ## References
 
-Rodrigues et al. (2026). *A Code Standard for Ecology and Evolution*. Journal. [https://doi.org/[DOI]](https://doi.org/%5BDOI%5D){.uri}
-van Dis et al. (2023). *Phenological mismatch affects individual fitness and population growth in the winter moth*. Proceedings of the Royal Society B: Biological Sciences, 290(2005), 20230414. <https://doi.org/10.1098/rspb.2023.0414>
+- Rodrigues et al. (2026). *A Code Standard for Ecology and Evolution*. Preprint. <https://doi.org/[DOI]>
+- van Dis et al. (2023). *Phenological mismatch affects individual fitness and population growth in the winter moth*. Proceedings of the Royal Society B: Biological Sciences, 290(2005), 20230414. <https://doi.org/10.1098/rspb.2023.0414>
