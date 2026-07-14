@@ -15,7 +15,8 @@
     |- fig
     |- result
   |- scripts
-    |- script_template.R
+    |- script_template_generic.R
+    |- script_template_specific.R
   |- .Rprofile
   |- .gitignore
   |- CITATION_template.cff
@@ -40,14 +41,15 @@
 | `data/raw/` | Raw input data (e.g. observed field counts) |
 | `data/processed/` | Processed input data (data that has been processed before analysis e.g. pixel brightness of images) |
 | `output/` | Folders to store script generated results and figures |
-| [`scripts/script_template.R`](scripts/script_template.R) | Analysis script (template) |
+| [`scripts/script_template_generic.R`](scripts/script_template_generic.R) | Analysis script (generic template) |
+| [`scripts/script_template_specific.R`](scripts/script_template_specific.R) | Analysis script (template that more closely follows CodeStandard script) |
 | [`.Rprofile`](.Rprofile) | A configuration file containing `R` code that is automatically executed every time an `R` session starts |
 | [`.gitignore`](.gitignore) | A plain text file used to specify files that we do not want Git to track (i.e. that Git should ignore) |
 | `*.gitkeep` | Empty placeholder file to make sure git will track directory structure but not directory content of the data and output folders |
 | [`CITATION_template.cff`](CITATION_template.cff) | Machine-readable file that specifies how to cite this repository (template) |
 | [`[ProjectName].Rproj`](ProjectName.Rproj) | A project file used by RStudio to define and manage an `R` project |
 | [`LICENSE`](LICENSE) | License file specifying how this repository can be reused |
-| [`README_template.md`](README_template.md) | Description and metadata for this repository (template) |
+| [`README.md`](README.md) | Description and metadata for this repository (template) |
 
 
 ## Codebook for `data/*`

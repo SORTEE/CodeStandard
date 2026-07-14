@@ -2,7 +2,7 @@
 
 **Authors:** Arthur V. Rodrigues, Cecilia Baldoni, Mattia Ghilardi, Saoirse Kelleher, Abhishek Kumar, Martin Luquet, Charlotte Recapet, Kevin R. Bairos-Novak, Giulia Masoero, Matthieu Paquet, Alfredo Sánchez-Tójar, Saeed Shafiei Sabet, Gabe Winter & Natalie E. van Dis
 
-The [Code Standard](CodeStandard/) is a piece of R code with accompanying metadata files that can be used as an accessible and easy way to implement transparent and reproducible practices in your own coding by example. To enable easy implementation of Open, Reliable, and Transparent (ORT) best practices for code sharing, we also offer a [repository template](Templates/) that you can download to get started with preparing your code for sharing, including clear folder structure, a README file template, analysis script template, and more.
+The [Code Standard](CodeStandard/) is a piece of R code with accompanying metadata files that can be used as an accessible and easy way to implement transparent and reproducible practices in your own coding by example. To enable easy implementation of Open, Reliable, and Transparent (ORT) best practices for code sharing, we also offer a [repository template](Templates/) that you can download to get started with preparing your code for sharing, including clear folder structure, a README file template, analysis script templates, and more.
 
 The Code Standard was created by members of the Society for Open, Reliable, and Transparent Ecology and Evolution ([SORTEE](https://sortee.org/)), coming together as a community to discuss good code sharing practices in Ecology and Evolution as part of a [Hackathon](Hackathon/) to review and rewrite an existing piece of R code coming from a published paper (see details in Rodrigues et al. 2026).
 
@@ -54,12 +54,12 @@ We also share the [`Hackathon`](Hackathon/) repository that was used to create t
 We share the `Hackathon` repository to ensure transparency on how the Code Standard was created, and to allow for the intermediate files and Hackathon structure to be used for teaching purposes. For example, it can be used as a reference to organize your own hackathon to create code standards for other often-used analyses in Ecology and Evolution.
 
 ### `Templates` folder
-The [`Templates`](Templates/) folder is a repository template including clear folder structure, a [README file template](Templates/README_template.md), [analysis script template](Templates/scripts/script_template.R), and more, to help you implement best practices for code sharing in your own coding. 
+The [`Templates`](Templates/) folder is a repository template including clear folder structure, a [README file template](Templates/README_template.md), [analysis script templates](Templates/scripts/), and more, to help you implement best practices for code sharing in your own coding. 
 
-You can also use `git` to only download the `Templates` folder to your machine to get started:
+You can also use `{git}` to only download the `Templates` folder to your machine to get started:
 ```
 # Ask git to clone the CodeStandard repository to your machine 
-# but including only the bare essentials (root README and .gitignore):
+# but including only the bare essentials (i.e. root README and .gitignore):
 git clone --filter=blob:none --sparse https://github.com/SORTEE/CodeStandard.git
 
 # Move into the created folder and download the `Templates` folder from the repository:
@@ -73,7 +73,7 @@ git sparse-checkout set Templates/
 If you use this repository, please cite:
 
 - **Paper:** Rodrigues et al. (2026). *A Code Standard for Ecology and Evolution*. Preprint. <https://doi.org/[DOI]>
-- **Code:** Rodrigues et al. (2026). *A Code Standard for Ecology and Evolution* [Computer software]. Zenodo. <https://doi.org/[DOI]>
+- **Code:** Rodrigues et al. (2026). *A Code Standard for Ecology and Evolution (version 1)* [Computer software]. Zenodo. <https://doi.org/[DOI]>
 
 
 ## References
