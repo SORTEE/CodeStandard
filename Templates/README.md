@@ -22,7 +22,7 @@
   |- CITATION_template.cff
   |- [ProjectName].Rproj
   |- LICENSE
-  |- README_template.md
+  |- README.md
 ```
 
 ## Reproducing the analysis

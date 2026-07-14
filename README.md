@@ -54,7 +54,7 @@ We also share the [`Hackathon`](Hackathon/) repository that was used to create t
 We share the `Hackathon` repository to ensure transparency on how the Code Standard was created, and to allow for the intermediate files and Hackathon structure to be used for teaching purposes. For example, it can be used as a reference to organize your own hackathon to create code standards for other often-used analyses in Ecology and Evolution.
 
 ### `Templates` folder
-The [`Templates`](Templates/) folder is a repository template including clear folder structure, a [README file template](Templates/README_template.md), [analysis script templates](Templates/scripts/), and more, to help you implement best practices for code sharing in your own coding. 
+The [`Templates`](Templates/) folder is a repository template including clear folder structure, a [README file template](Templates/README.md), [analysis script templates](Templates/scripts/), and more, to help you implement best practices for code sharing in your own coding. 
 
 You can also use `{git}` to only download the `Templates` folder to your machine to get started:
 ```
