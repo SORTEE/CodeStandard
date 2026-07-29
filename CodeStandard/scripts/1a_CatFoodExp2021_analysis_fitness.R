@@ -330,6 +330,15 @@ glmSurv_step1 <- lme4::glmer(survival ~ (MismTreat_noNeg + MismTreat_squared)*Ph
                              control = glmerControl(calc.derivs = FALSE)) # helps convergence
 # Check model assumptions
 performance::check_model(glmSurv_step1)
+# Interpretation (see https://easystats.github.io/performance/articles/check_model.html for additional information)
+# Posterior Predictive Check: No discrepancy between observed and predicted counts of survival data.
+# Binned residuals: Higher survival values are slightly underestimated by the model.
+# Influential observations: Row 85 is an outlier (lower survival than expected) 
+#   with high effect (leverage) on the model parameters.
+# Collinearity: All predictors have a high Variance Inflation Factor, 
+#   indicating they provide redundant information. This is expected for interaction terms and terms based 
+#   on the same variable, but warrant caution when interpreting coefficients.
+# Both residuals and random effects conform to the distribution expected by the model.
 
 # Use ANOVA to check significance of covariates (here: interactions not significant)
 anovaSurv_step1 <- drop1(glmSurv_step1,test = "Chi") %>% as.data.frame() 
@@ -350,6 +359,14 @@ glmSurv_final <- glmSurv_step2
 
 # Check model assumptions
 performance::check_model(glmSurv_final)
+# Interpretation (see https://easystats.github.io/performance/articles/check_model.html for additional information)
+# Posterior Predictive Check: No discrepancy between observed and predicted counts of survival data.
+# Binned residuals: Higher survival values are slightly underestimated by the model.
+# Influential observations: Outliers do not have excessive influence on the model parameters.
+# Collinearity: The predictors based on MismTreat have a high Variance Inflation Factor,
+#   indicating they provide redundant information. This is expected for terms based on the same variable,
+#   but warrant caution when interpreting coefficients.
+# Both residuals and random effects conform to the distribution expected by the model.
 
 # View model summary (NB: estimates are log odds)
 summary(glmSurv_final)
@@ -526,6 +543,17 @@ lmPupa_step1 <- lmerTest::lmer(PupaWeight ~ (MismTreat_noNeg + MismTreat_squared
 
 # Check model assumptions
 performance::check_model(lmPupa_step1)
+# Interpretation (see https://easystats.github.io/performance/articles/check_model.html for additional information)
+# Posterior Predictive Check: No discrepancy between values.
+# Linearity: The linearity assumption is well met.
+# Homogeneity of variance: Variance is similar along the whole range of predicted values.
+# Influential observations: Data point 20 is a strong outlier (higher value than expected)
+#   with high effect (leverage) on the model.
+# Collinearity: All predictors have a high Variance Inflation Factor, indicating they provide 
+#   redundant information. This is expected for interaction terms and terms based on the same variable, 
+#   but warrant caution when interpreting coefficients.
+# Both residuals and random effects conform to the distribution expected by the model.
+
 # Row 20 individual is a clear outlier.
 cat_data_pupa[20,]
 
@@ -558,12 +586,30 @@ anova(lmPupa_step3_excludeOutlier)
 
 # Check model assumptions
 performance::check_model(lmPupa_step3_excludeOutlier)
+# Interpretation (see https://easystats.github.io/performance/articles/check_model.html for additional information)
+# Posterior Predictive Check: No discrepancy between observed and predicted values.
+# Linearity: The linearity assumption is well met.
+# Homogeneity of variance: Variance is similar along the whole range of predicted values.
+# Influential observations: Outliers do not have excessive influence on the model parameters.
+# Collinearity: All predictors have a medium Variance Inflation Factor, indicating they provide 
+#   sufficiently independent information.
+# Both residuals and random effects conform to the distribution expected by the model.
 
 # Use the version including the first mismatch day as the final model
 lmPupa_final <- lmPupa_step3
 
 # Check model assumptions
 performance::check_model(lmPupa_final)
+# Interpretation (see https://easystats.github.io/performance/articles/check_model.html for additional information)
+# Posterior Predictive Check: No discrepancy between observed and predicted values.
+# Linearity: The linearity assumption is well met.
+# Homogeneity of variance: Variance is similar along the whole range of predicted values.
+# Influential observations: Outliers do not have excessive influence on the model parameters.
+# Collinearity: All predictors have a low Variance Inflation Factor, indicating they provide independent information.
+# Both residuals and random effects conform to the distribution expected by the model.
+
+
+
 
 # View model summary
 summary(lmPupa_final)
@@ -846,6 +892,6 @@ knitr::spin("scripts/1a_CatFoodExp2021_analysis_fitness.R", knit = FALSE)
 
 # Converted .Rmd file to HTML in Rstudio by:
 # 1. Opening generated .Rmd file
-# 2. Removing last script lines for turning script into .Rmd file (lines >846)
+# 2. Removing last script lines for turning script into .Rmd file (lines > 890)
 # 3. Selected Knit -> Knit Directory -> Project directory
 # 4. Selected Knit -> Knit to HTML
