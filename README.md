@@ -10,18 +10,18 @@ The Top10 Open, Reliable and Transparent (ORT) practices that we consider to be 
 
 | Rank | Topic | ORT practice |
 |------|-------|--------------|
-| 1 | Reported | Ensure that shared code matches methods description in the paper |
-| 2 | Reported, Reproducible | Record and report required softwares, packages and their versions |
-| 3 | Organisation & Structure | Have code with a clear structure |
-| 4 | Organisation & Structure | Use an appropriate folder structure for your project |
-| 5 | Reported, Reliable, Organisation & Structure | Extensively comment your scripts |
-| 6 | Other | Provide clear and complete documentation (i.e. README and metadata) |
-| 7 | Run | Ensure that your code runs without error and mistakes |
-| 8 | Other | Ensure that data and code adhere to the FAIR principles: Findable, Accessible, Interoperable and Reusable |
-| 9 | Run | Use R package namespaces for essential functions and function names that overlap between packages. (e.g. `lme4::glmer()`) |
-| 10 | Reproducible | Ensure that the whole analysis workflow is code-based and self-contained |
+| 1 | Run | Ensure that your code runs without error and mistakes |
+| 2 | Reported | Ensure that shared code matches the methods description in the associated paper |
+| 3 | Reproducible | Ensure that all results, figures, and conclusions are reproducible from the code |
+| 4 | Reported, Reliable, Organisation & Structure | Extensively comment your scripts |
+| 5 | Run, Organisation & Structure | Use an appropriate folder structure for your project |
+| 6 | Other | Ensure that data and code adhere to the FAIR principles: Findable, Accessible, Interoperable and Reusable |
+| 7 | Reliable | Ensure that your code is reliable, meaning that it runs and completes as intended |
+| 8 | Run, Organisation & Structure | Have code with a clear structure |
+| 9 | Other | Provide clear and complete documentation (i.e. README and metadata) |
+| 10 | Reproducible | Record and report required softwares, packages and their versions |
 
-In total, we identified 36 best practices for code sharing (see Rodrigures et al. 2026).
+In total, we identified 39 best practices for code sharing (see Rodrigures et al. 2026).
 
 
 ## How to use this repository
@@ -49,7 +49,7 @@ In addition to the analysis script, the `CodeStandard` also implements best prac
 *The `CodeStandard` folder is intended to serve as a reference for good practices in code sharing. The place you return to whenever you need an example of how to implement an ORT practice in your own coding.*
 
 ### `Hackathon` folder
-We also share the [`Hackathon`](Hackathon/) repository that was used to create the Code Standard. In this folder, you can find [the original code and supporting documentation](Hackathon/00_base_code), as well as folders for each of the focus areas of code review (i.e. Reported, Run, Reliable, Reproducible, Organisation & Structure, and Other considerations) and other auxiliary documentation used during the hackathon. 
+We also share the [`Hackathon`](Hackathon/) repository that was used to create the Code Standard. In this folder, you can find [the original code and supporting documentation](Hackathon/00_base_code), as well as folders for each of the focus areas of code review (i.e. Reported, Run, Reliable, Reproducible, Organisation & Structure, and Other considerations) and other auxiliary documentation used during the hackathon. More supporting files can be found on [OSF](https://osf.io/762u4/).
 
 We share the `Hackathon` repository to ensure transparency on how the Code Standard was created, and to allow for the intermediate files and Hackathon structure to be used for teaching purposes. For example, it can be used as a reference to organize your own hackathon to create code standards for other often-used analyses in Ecology and Evolution.
 
