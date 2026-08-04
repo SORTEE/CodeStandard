@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use this repository, please cite it as below."
+authors:
+  - family-names: "van Dis"
+    given-names: "Natalie E."
+  - family-names: "Sieperda"
+    given-names: "Geert-Jan"
+  - family-names: "Bansal"
+    given-names: "Vidisha"
+  - family-names: "Van Lith"
+    given-names: "Bart"
+  - family-names: "Wertheim"
+    given-names: "Bregje"
+  - family-names: "Visser"
+    given-names: "Marcel E."
+title: "Phenological mismatch affects individual fitness and population growth in the winter moth"
+version: 2.0.0
+doi: 10.5281/zenodo.7657344
+date-released: 2025-08-26
+url: "https://github.com/SORTEE/CodeStandard"
+license: LGPL-3.0-or-later

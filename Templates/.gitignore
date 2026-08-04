@@ -1,0 +1,14 @@
+.Rproj.user
+.Rhistory
+.Renviron
+.RData
+.Ruserdata
+*.DS_Store
+
+data/*
+output/fig/*
+output/result/*
+
+!*.gitkeep
+!output/fig/.gitkeep
+!output/result/.gitkeep
