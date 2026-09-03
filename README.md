@@ -4,7 +4,7 @@
 
 The [Code Standard](CodeStandard/) is a piece of R code with accompanying metadata files that can be used as an accessible and easy way to implement transparent and reproducible practices in your own coding by example. To enable easy implementation of Open, Reliable, and Transparent (ORT) best practices for code sharing, we also offer a [repository template](Templates/) that you can download to get started with preparing your code for sharing, including clear folder structure, a README file template, analysis script templates, and more.
 
-The Code Standard was created by members of the Society for Open, Reliable, and Transparent Ecology and Evolution ([SORTEE](https://sortee.org/)), coming together as a community to discuss good code sharing practices in Ecology and Evolution as part of a [Hackathon](Hackathon/) to review and rewrite an existing piece of R code coming from a published paper (see details in Rodrigues et al. 2026).
+The Code Standard was created by members of the Society for Open, Reliable, and Transparent Ecology and Evolutionary Biology ([SORTEE](https://sortee.org/)), coming together as a community to discuss good code sharing practices in Ecology and Evolution as part of a [Hackathon](Hackathon/) to review and rewrite an existing piece of R code coming from a published paper (see details in Rodrigues et al. 2026).
 
 The Top10 Open, Reliable and Transparent (ORT) practices that we consider to be essential for code sharing in Ecology and Evolution and beyond are:
 
